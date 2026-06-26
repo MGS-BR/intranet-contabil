@@ -195,6 +195,7 @@ def apagar_tabelas():
 
     conn = conectar()
     cursor = conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = OFF")
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tabelas = [t[0] for t in cursor.fetchall() if t[0] != "sqlite_sequence"]
     for nome in tabelas:

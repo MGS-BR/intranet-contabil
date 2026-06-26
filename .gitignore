@@ -1,3 +1,4 @@
 *.env
+*.zip
 venv/
 __pycache__/
