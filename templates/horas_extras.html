@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cadastro Hora Extra
+{% endblock %}
+
+
+{% block conteudo %}
+<body>
+<h1>Registro de Horas Extras</h1>
+
+<hr>
+
+<h2>Cadastrar Funcionário</h2>
+
+<form method="POST" action="/horas-extras/funcionario/novo">
+    <input
+        type="text"
+        name="nome"
+        placeholder="Nome do funcionário"
+        required
+    >
+
+    <button type="submit">
+        Cadastrar
+    </button>
+</form>
+
+<hr>
+
+<form method="GET">
+    <label>Mês:</label>
+	<br>
+    <input
+        type="month"
+        name="mes"
+        value="{{ mes }}"
+    >
+
+    <button type="submit">
+        Filtrar
+    </button>
+</form>
+<hr>
+
+<h2>Resumo do mês</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Funcionário</th>
+            <th>Total de Horas</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+    {% for f in funcionarios %}
+
+        <tr>
+            <td>{{ f.nome }}</td>
+
+            <td>
+                {{ "%.2f"|format(f.total_mes) }} h
+            </td>
+
+            <td>
+                <a href="/horas-extras/funcionario/{{ f.id }}?mes={{ mes }}">
+                    Visualizar
+                </a>
+            </td>
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+</table>
+
+<h2>
+Total geral do mês:
+{{ "%.2f"|format(total_geral) }} horas
+</h2>
+</body>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Procedimentos
+{% endblock %}
+
+{% block conteudo %}
+<body>
+<h1>Biblioteca de Procedimentos</h1>
+
+<hr>
+
+<form method="GET">
+    <input type="text" name="busca" placeholder="Buscar procedimentos..." value="{{ busca }}">
+    <button type="submit">Buscar</button>
+</form>
+
+<hr>
+
+{% for categoria, arquivos in arquivos_por_categoria.items() %}
+    <h2>{{ categoria }}</h2>
+    {% for arquivo in arquivos %}
+        <p>
+            📄 {{ arquivo }}
+            <a href="/procedimentos/abrir/{{ arquivo }}" target="_blank">Abrir</a>
+        </p>
+    {% endfor %}
+    <hr>
+{% endfor %}
+</body>
+{% endblock %}

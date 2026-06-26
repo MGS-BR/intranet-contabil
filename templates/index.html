@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+
+<h1>Sistema Interno Conntador</h1>
+
+<hr>
+
+<h2>Links rápidos</h2>
+
+<div class="links-rapidos">
+
+    <a href="https://build.fillout.com/home" target="_blank">Formulários Fillout</a>
+    <a href="https://docs.google.com/forms/u/0/" target="_blank">Formulários Google</a>
+    <a href="https://admin.jettax360.com.br/" target="_blank">Jettax</a>
+    <a href="https://webmail-211.site.com.br/" target="_blank">Webmail</a>
+    <a href="https://trello.com/b/jxl8pymT/conntador-contabilidade" target="_blank">Trello</a>
+    <a href="https://manage.wix.com/dashboard/7040d0b5-93cf-4015-8d63-a694178dee04/home?referralInfo=my-sites" target="_blank">Wix</a>
+
+</div>
+
+<hr>
+
+<h2>Resumo</h2>
+
+<p>📚 Procedimentos: {{ total_procedimentos }}</p>
+<p>⏳ Tempo ligado: {{ dias }} dias, {{ horas }} horas e {{minutos}} minutos</p>
+<p>💾 Último backup: {{ ultimo_backup }}</p>
+
+<hr>
+
+<div id="calendar-container">
+
+	<h2>Calendário</h2>
+
+    <div id="calendar"></div>
+
+</div>
+
+{% endblock %}
+
+{% block modal %}
+
+<div id="eventoModal">
+
+    <div id="caixa-evento">
+
+        <div class="modal-header">
+
+            <h5>Evento</h5>
+            <button id="fecharModal">X</button>
+        </div>
+        <div class="modal-body">
+
+            <input type="hidden" id="evento_id">
+            <label>Título</label>
+            <input class="form-control mb-3" id="titulo">
+			<label>Cor do evento</label>
+			<div id="paleta-cores">
+				<div class="cores-predefinidas">
+					<div class="cor" data-cor="#3788D8" style="background:#3788D8"></div>
+					<div class="cor" data-cor="#37D774" style="background:#37D774"></div>
+					<div class="cor" data-cor="#D7BD37" style="background:#D7BD37"></div>
+					<div class="cor" data-cor="#D737BA" style="background:#D737BA"></div>
+					<div class="cor" data-cor="#D73737" style="background:#D73737"></div>
+				</div>
+				<label for="seletorCor" id="botaoCor">
+					🎨 Escolher outra cor
+					<input type="color" id="seletorCor" value="#3788d8">
+				</label>
+			</div>
+			<input type="hidden" id="cor" value="#3788D8">
+            <label>Descrição</label>
+            <textarea class="form-control mb-3" id="descricao"></textarea>
+
+            <label>Recorrência</label>
+
+            <select class="form-control mb-3" id="recorrencia">
+
+                <option value="">Não repetir</option>
+                <option value="mensal">Todo mês</option>
+                <option value="anual">Todo ano</option>
+
+            </select>
+
+            <div id="campo_intervalo">
+                <label>A cada quantos meses?</label>
+                <input type="number" value="1" min="1" class="form-control" id="intervalo">
+            </div>
+
+            <div id="campo_mes">
+                <label>Mês do ano</label>
+                <input type="number" min="1" max="12" class="form-control" id="mes">
+            </div>
+
+        </div>
+        <div class="modal-footer">
+
+            <button class="btn btn-danger" id="btnExcluir">Excluir</button>
+            <button class="btn btn-primary" id="btnSalvar">Salvar</button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+let calendario;
+
+let eventoSelecionado = null;
+
+let dataSelecionada = null;
+
+let modal = document.getElementById("eventoModal");
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+calendario = new FullCalendar.Calendar(
+
+document.getElementById("calendar"),
+
+{
+locale:"pt-br",
+height:"auto",
+initialView:"dayGridMonth",
+events:"/api/eventos",
+
+buttonText: {
+	today: "Hoje",
+	month: "Mês",
+	week: "Semana",
+	day: "Dia"
+},
+
+dateClick:function(info){
+
+    abrirModal(null, info.date);
+
+},
+
+eventClick:function(info){
+
+    abrirModal(
+        info.event,
+        info.event.start
+    );
+
+}
+
+});
+calendario.render();
+setTimeout(() => {
+	calendario.updateSize()
+}, 100);
+
+document.querySelectorAll(".cor").forEach(cor => {
+
+	cor.onclick=function(){
+		let valor = this.dataset.cor;
+		
+		document.getElementById("cor").value = valor;
+		document.getElementById("seletorCor").value = valor;
+		
+		document.querySelectorAll(".cor").forEach(c => c.classList.remove("selecionada"));
+		
+		thi.classList.add("selecionada");
+	}
+	
+});
+
+document.getElementById("seletorCor").oninput=function(){
+
+	let valor = this.value;
+	
+	document.getElementById("cor").value = valor;
+	
+	document.querySelectorAll(".cor").forEach(c => c.classList.remove("selecionada"));
+
+};
+
+});
+
+function abrirModal(evento,data){
+eventoSelecionado = evento;
+dataSelecionada = data;
+
+document.getElementById("evento_id").value =
+evento ? evento.id : "";
+
+document.getElementById("titulo").value =
+evento ? evento.title : "";
+
+document.getElementById("cor").value =
+evento?.backgroundColor || "#3788d8";
+
+document.getElementById("seletorCor").value =
+evento?.backgroundColor || "#3788d8";
+
+document.getElementById("descricao").value =
+evento ? evento.extendedProps.description : "";
+
+document.getElementById("recorrencia").value = "";
+
+document.getElementById("intervalo").value = 1;
+
+document.getElementById("mes").value =
+data.getMonth()+1;
+
+atualizarRecorrencia();
+
+document.getElementById("btnExcluir").style.display =
+evento ? "block" : "none";
+
+modal.style.display = "block";
+
+
+}
+
+function fecharModal(){
+    modal.style.display = "none";
+}
+
+document.getElementById("fecharModal")
+.onclick = fecharModal;
+
+function atualizarRecorrencia(){
+	let valor = document.getElementById("recorrencia").value;
+	
+	document.getElementById("campo_intervalo").style.display =
+	valor=="mensal" ? "block":"none";
+
+	document.getElementById("campo_mes").style.display =
+	valor=="anual" ? "block":"none";
+}
+
+document.getElementById("recorrencia")
+.onchange = atualizarRecorrencia;
+
+document.getElementById("btnSalvar")
+.onclick=function(){
+
+let id =
+document.getElementById("evento_id").value;
+
+let dados={
+
+titulo:
+document.getElementById("titulo").value,
+
+cor:
+document.getElementById("cor").value,
+
+descricao:
+document.getElementById("descricao").value,
+
+inicio:
+eventoSelecionado ?
+eventoSelecionado.startStr :
+dataSelecionada.toISOString().substring(0,10),
+
+fim:null,
+
+recorrencia:
+document.getElementById("recorrencia").value,
+
+intervalo:
+Number(
+document.getElementById("intervalo").value
+),
+
+dia:
+eventoSelecionado ?
+eventoSelecionado.start.getDate():
+dataSelecionada.getDate(),
+
+mes:
+Number(
+document.getElementById("mes").value
+)
+
+};
+fetch(
+id ?
+"/api/eventos/"+id :
+"/api/eventos",
+{
+method:id ? "PUT":"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify(dados)
+})
+.then(()=>{
+fecharModal();
+calendario.refetchEvents();
+});
+
+};
+document.getElementById("btnExcluir")
+.onclick=function(){
+
+let id =
+document.getElementById("evento_id").value;
+
+fetch(
+"/api/eventos/"+id,
+{
+method:"DELETE"
+}
+
+)
+.then(()=>{
+fecharModal();
+calendario.refetchEvents();
+});
+};
+</script>
+{% endblock %}

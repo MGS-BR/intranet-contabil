@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}
+Converter PDF
+{% endblock %}
+
+{% block conteudo %}
+<body>
+
+<h2>Converter PDF para pesquisável</h2>
+
+
+<form method="POST" enctype="multipart/form-data" class="upload-form">
+
+	<div id="dropzone">
+		<h3>📤 Arraste os arquivos aqui</h3>
+        <p>ou clique para selecionar</p>
+		<input id="input-arquivos-pdf" type="file" name="pdfs" accept="application/pdf" multiple hidden required>
+	</div>
+	
+	<p id="lista-arquivos">Nenhum arquivo foi selecionado.</p>
+
+	<p>O processo de conversão pode demorar alguns minutos.</p>
+
+	<button type="button" onclick="enviar()">
+	Converter
+	</button>
+	
+
+</form>
+
+<div id="status-documentos"></div>
+
+{% if erro %}
+    <div class="erro">{{ erro }}</div>
+{% endif %}
+
+<script>
+const dropzone = document.getElementById("dropzone");
+const inputArquivos = document.getElementById("input-arquivos-pdf");
+const listaArquivos = document.getElementById("lista-arquivos");
+
+dropzone.addEventListener("click", () => inputArquivos.click());
+
+dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("ativo");
+});
+
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("ativo"));
+
+dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("ativo");
+    inputArquivos.files = e.dataTransfer.files;
+    mostrarArquivos();
+});
+
+inputArquivos.addEventListener("change", mostrarArquivos);
+
+function mostrarArquivos() {
+    let nomes = [];
+    for (let i = 0; i < inputArquivos.files.length; i++) {
+        nomes.push("📄 " + inputArquivos.files[i].name);
+    }
+    listaArquivos.innerHTML = nomes.length
+        ? "<b>Selecionados:</b><br>" + nomes.join("<br>")
+        : "Nenhum arquivo foi selecionado.";
+}
+
+function criarStatus(id, nome){
+	let area = document.getElementById("status-documentos");
+	area.innerHTML += `
+	
+	<div id="doc-${id}" class="documento">
+	
+	📄 Documento ${nome}
+	
+	<br>
+	<span>
+	⏳ Aguardando processamento...
+	</span>
+	</div>
+	`;
+}
+
+function enviar(){
+	
+	let form = new FormData();
+
+	let arquivos = document.getElementById("input-arquivos-pdf").files;
+
+	for(let i = 0; i < arquivos.length; i++){
+
+		form.append(
+			"pdfs",
+			arquivos[i]
+		);
+	}
+
+	fetch("/ocr",{
+
+	method:"POST",
+	body:form
+	})
+
+	.then(r=>r.json())
+
+	.then(data=>{
+	data.ids.forEach((id, index) => {
+	let nome = arquivos[index].name
+	criarStatus(id, nome);
+	verificarStatus(id);
+	});
+	});
+	function verificarStatus(id){
+		let intervalo = setInterval(()=>{
+			fetch("/status/"+id)
+			.then(r=>r.json())
+			.then(status=>{
+			let documento = document.getElementById("doc-"+id)
+			if(status.status === "concluido"){
+				clearInterval(intervalo);
+				documento.innerHTML = `
+
+				📄 ${status.nome}
+				<br>
+				
+				<span>
+				✅ Convertido
+				</span>
+				
+				<br>
+
+				<a href="/download/${id}">
+				💾 Baixar PDF
+				</a>
+
+				`;
+			}
+			else{
+				documento.querySelector("span").innerHTML = "⏳ Processando..."
+			}
+			
+			});
+		},2000);
+	}
+
+}
+
+</script>
+
+</body>
+{% endblock %}

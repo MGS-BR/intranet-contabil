@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gerenciador de Arquivos
+{% endblock %}
+
+{% block conteudo %}
+
+<body>
+<h1>Localizador de Arquivos</h1>
+
+<hr>
+
+<form method="POST" action="/arquivos/atualizar">
+    <button type="submit">Atualizar arquivos</button>
+</form>
+
+<h2>Enviar arquivos para a pasta atual</h2>
+<form method="POST" action="/arquivos/upload" class="upload-form" onsubmit="return confirmarUpload();" enctype="multipart/form-data">
+    <input type="hidden" name="pasta_atual" value="{{ pasta }}">
+
+    <div id="dropzone">
+        <h3>📤 Arraste os arquivos aqui</h3>
+        <p>ou clique para selecionar</p>
+        <input id="input-arquivos" type="file" name="arquivos" multiple hidden>
+    </div>
+
+    <p id="lista-arquivos">Nenhum arquivo foi selecionado.</p>
+    <button type="submit" class="btn-upload">Enviar arquivos</button>
+</form>
+
+<hr>
+
+<form method="GET">
+    <input type="text" name="busca" placeholder="Pesquisar arquivo" value="{{ busca }}">
+    <button>Buscar</button>
+</form>
+
+{% if pasta %}
+    <a href="/arquivos">Raiz</a>
+    <p>Pasta atual: {{ pasta }}</p>
+{% else %}
+    <p>Pasta atual: Raiz</p>
+{% endif %}
+
+{% for item in itens %}
+    {% if item.tipo == "pasta" %}
+        <p>📁 <a href="/arquivos?pasta={{ item.rel }}">{{ item.nome }}</a></p>
+    {% else %}
+        <p>
+            📄 {{ item.nome }}
+            {% if item.pasta %}<br><small>{{ item.pasta }}</small>{% endif %}
+            <a href="/arquivos/abrir?arquivo={{ item.rel }}" target="_blank">Abrir</a>
+        </p>
+    {% endif %}
+{% endfor %}
+
+<script>
+const dropzone = document.getElementById("dropzone");
+const inputArquivos = document.getElementById("input-arquivos");
+const listaArquivos = document.getElementById("lista-arquivos");
+
+dropzone.addEventListener("click", () => inputArquivos.click());
+
+dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("ativo");
+});
+
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("ativo"));
+
+dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("ativo");
+    inputArquivos.files = e.dataTransfer.files;
+    mostrarArquivos();
+});
+
+inputArquivos.addEventListener("change", mostrarArquivos);
+
+function mostrarArquivos() {
+    let nomes = [];
+    for (let i = 0; i < inputArquivos.files.length; i++) {
+        nomes.push("📄 " + inputArquivos.files[i].name);
+    }
+    listaArquivos.innerHTML = nomes.length
+        ? "<b>Selecionados:</b><br>" + nomes.join("<br>")
+        : "Nenhum arquivo foi selecionado.";
+}
+
+function confirmarUpload() {
+    if (!inputArquivos.files.length) {
+        alert("Selecione pelo menos um arquivo.");
+        return false;
+    }
+    return confirm("Você está enviando os arquivos para a pasta: {{ pasta or 'Raiz' }}");
+}
+</script>
+</body>
+{% endblock %}

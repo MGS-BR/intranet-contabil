@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="body-login">
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <h1>Sistema Interno</h1>
+
+        <p class="subtitulo">
+            Escritório Contábil Conntador
+        </p>
+
+        <form method="POST">
+
+            <input
+                type="password"
+                name="senha"
+                placeholder="Digite a senha"
+                class="campo-login"
+                required
+            >
+
+            <button type="submit" class="btn-login">
+                Entrar
+            </button>
+
+        </form>
+
+        {% if erro %}
+        <div class="erro">
+            {{ erro }}
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

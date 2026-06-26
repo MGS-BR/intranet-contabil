@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+Monitor do Servidor
+{% endblock %}
+
+{% block conteudo %}
+<body>
+
+<h1>Monitor do Servidor</h1>
+
+<hr>
+
+<h2>Status Geral</h2>
+
+<form method="post" action="/servidor/reiniciar" onsubmit="return confirm('Deseja realmente reiniciar o servidor?');">
+    <input type="password" name="senha" placeholder="Senha administrativa" required>
+    <button type="submit">Reiniciar o servidor</button>
+</form>
+
+<form method="POST" action="/servidor/reiniciar-site" onsubmit="return confirm('Deseja realmente reiniciar o site?');">
+	<input type="password" name="senha" placeholder="Senha administrativa" required>
+	<button type="submit">Reiniciar o site</button>
+</form>
+
+<p><b>CPU:</b> {{ cpu }}%</p>
+<p><b>Memória RAM:</b> {{ memoria.percent }}%</p>
+<p><b>Tempo ligado:</b> {{ dias }} dias, {{ horas }} horas e {{ minutos }} minutos</p>
+<p><b>Último backup:</b> {{ ultimo_backup }}</p>
+
+<hr>
+
+<h2>Discos</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Unidade</th>
+        <th>Total GB</th>
+        <th>Usado GB</th>
+        <th>Livre GB</th>
+        <th>Uso</th>
+    </tr>
+
+    {% for d in discos %}
+    <tr>
+        <td>{{ d.unidade }}</td>
+        <td>{{ d.total }}</td>
+        <td>{{ d.usado }}</td>
+        <td>{{ d.livre }}</td>
+        <td>{{ d.percentual }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+{% endblock %}
