@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+Central de Backup
+{% endblock %}
+
+{% block conteudo %}
+
+<body>
+<h1>Central de Backup</h1>
+
+<hr>
+<form method="post" action="/backup/executar">
+    <button type="submit">Executar Backup</button>
+</form>
+
+<hr>
+
+<h2>Log do Backup</h2>
+<a href="/backup/vizualizar-log">Baixar arquivo de Log</a>
+<pre>{{ log }}</pre>
+</body>
+{% endblock %}

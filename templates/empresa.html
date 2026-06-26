@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresa {{ empresa.razao_social or '' }}</title>
+	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>Detalhes da Empresa</h1>
+
+<div class="links-rapidos">
+<a href="/empresas">Voltar</a>
+</div>
+
+<hr>
+
+{% if empresa %}
+
+<h2>Dados cadastrais</h2>
+
+<p><b>Razão Social:</b> {{ empresa.razao_social or '-' }}</p>
+<p><b>CNPJ:</b> {{ empresa.cnpj or '-' }}</p>
+<p><b>Nome Fantasia:</b> {{ empresa.nome_fantasia or '-' }}</p>
+<p><b>Porte:</b> {{ empresa.porte or '-' }}</p>
+<p><b>Data de Abertura:</b> {{ empresa.data_abertura or '-' }}</p>
+<p><b>Situação Cadastral:</b> {{ empresa.situacao_cadastral or '-' }}</p>
+<p><b>Data da Situação:</b> {{ empresa.data_situacao_cadastral or '-' }}</p>
+<p><b>Natureza Jurídica:</b> {{ empresa.natureza_juridica or '-' }}</p>
+<p><b>Atividade Principal:</b> {{ empresa.atividade_principal or '-' }}</p>
+<p><b>Capital Social:</b> {{ empresa.capital_social or '-' }}</p>
+<p><b>Responsável Principal:</b> {{ responsavel_principal or '-' }}</p>
+
+<hr>
+
+<h2>Contato e endereço</h2>
+<p><b>Telefone:</b> {{ empresa.telefone or '-' }}</p>
+<p><b>E-mail:</b> {{ empresa.email or '-' }}</p>
+<p><b>Endereço:</b>
+    {{ empresa.logradouro or '' }}
+    {{ empresa.numero or '' }}
+    {{ empresa.complemento or '' }}
+    - {{ empresa.bairro or '' }}
+    - {{ empresa.municipio or '' }}/{{ empresa.uf or '' }}
+    - CEP {{ empresa.cep or '' }}
+</p>
+
+<hr>
+
+<h2>Arquivos vinculados</h2>
+
+<p><b>Pasta da empresa:</b></p>
+{% if empresa.caminho_empresa %}
+    <a href="/arquivos?pasta={{ empresa.caminho_empresa|urlencode }}">Abrir pasta no sistema</a>
+{% else %}
+    <p>Não encontrada.</p>
+{% endif %}
+
+<p><b>Arquivo CNPJ:</b></p>
+{% if empresa.cnpj_arquivo %}
+    <a href="/arquivos/abrir?arquivo={{ empresa.cnpj_arquivo|urlencode }}" target="_blank">Abrir CNPJ</a>
+{% else %}
+    <p>Não encontrado.</p>
+{% endif %}
+
+<p><b>Arquivo QSA:</b></p>
+{% if empresa.qsa_arquivo %}
+    <a href="/arquivos/abrir?arquivo={{ empresa.qsa_arquivo|urlencode }}" target="_blank">Abrir QSA</a>
+{% else %}
+    <p>Não encontrado.</p>
+{% endif %}
+
+<p><b>Atualizado em:</b> {{ empresa.atualizado_em or '-' }}</p>
+
+<hr>
+
+<h2>Sócios / Administradores</h2>
+
+{% if socios %}
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Nome</th>
+            <th>Qualificação</th>
+        </tr>
+
+        {% for socio in socios %}
+        <tr>
+            <td>{{ socio.nome }}</td>
+            <td>{{ socio.qualificacao }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Nenhum sócio encontrado no QSA.</p>
+{% endif %}
+
+<hr>
+
+<p><b>Observações:</b></p>
+<p>{{ empresa.observacoes or '-' }}</p>
+
+{% else %}
+<p>Empresa não encontrada.</p>
+{% endif %}
+</body>
+</html>

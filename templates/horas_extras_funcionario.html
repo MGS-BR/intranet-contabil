@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horas {{ funcionario.nome }}</title>
+	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>Horas Extras - {{ funcionario.nome }}</h1>
+
+<div class="links-rapidos">
+<a href="/horas-extras">Voltar</a>
+</div>
+
+<hr>
+
+<form method="GET">
+    <label>Mês:</label>
+	<br>
+    <input type="month" name="mes" value="{{ mes }}">
+    <button>Filtrar</button>
+</form>
+<hr>
+
+<h2>Cadastrar Hora Extra</h2>
+
+<form method="POST" action="/horas-extras/cadastrar/{{ funcionario.id }}">
+    <p>
+        Data:<br>
+        <input type="date" name="data" required>
+    </p>
+
+    <p>
+        Início:<br>
+        <input type="time" name="hora_inicio" required>
+    </p>
+
+    <p>
+        Fim:<br>
+        <input type="time" name="hora_fim" required>
+    </p>
+
+    <p>
+        Observação:<br>
+        <input type="text" name="observacao">
+    </p>
+
+    <button type="submit">Cadastrar Hora Extra</button>
+</form>
+
+<hr>
+
+<h2>Total do mês: {{ "%.2f"|format(total_mes) }} horas</h2>
+
+<table>
+    <tr>
+        <th>Data</th>
+        <th>Início</th>
+        <th>Fim</th>
+        <th>Total</th>
+        <th>Observação</th>
+		<th>Ações</th>
+    </tr>
+
+    {% for r in registros %}
+    <tr>
+        <td>{{ r.data }}</td>
+        <td>{{ r.hora_inicio }}</td>
+        <td>{{ r.hora_fim }}</td>
+        <td>{{ r.total_horas }}</td>
+        <td>{{ r.observacao }}</td>
+		<td>
+			<form
+				method="POST"
+				action="/horas-extras/excluir/{{ r.id }}"
+				onsubmit="return confirm('Deseja realmente excluir esta hora extra?');"
+			>
+				<button
+					type="submit"
+					style="
+						background:#dc3545;
+						color:white;
+						border:none;
+						padding:5px 10px;
+						border-radius:4px;
+						cursor:pointer;
+					"
+				>
+					Excluir
+				</button>
+			</form>
+		</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

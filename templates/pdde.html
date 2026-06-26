@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}
+Planilha PDDE
+{% endblock %}
+
+{% block conteudo %}
+<h1>Importação PDDE</h1>
+
+<p>
+    Envie o PDF do PDDE, informe a conta caixa e a conta de receita do repasse.
+    <br>O sistema gera a planilha de importação para a contabilidade.
+	<br>Ou informe manualmente todos os lançamentos.
+</p>
+<div class="links-rapidos">
+	<a href="/pdde/plano_de_contas" target="_blank">Vizualizar plano de contas</a>
+</div>
+
+<h2>Opção 1 - Gerar pelo PDF</h2>
+
+<form method="POST" action="/pdde/pdf" enctype="multipart/form-data" class="upload-form">
+
+    <label>PDFS dos PDDEs</label>
+	<div id="dropzone">
+		<h3>📤 Arraste os arquivos aqui</h3>
+        <p>ou clique para selecionar</p>
+		<input id="input-arquivos" type="file" name="pdde_pdf" accept="application/pdf" multiple hidden required>
+	</div>
+	
+	<p id="lista-arquivos">Nenhum arquivo foi selecionado.</p>
+
+	<div id="status-documentos"></div>
+
+    <button type="submit">Gerar pelo PDF</button>
+	
+</form>
+
+<hr>
+
+<h2>Opção 2 - Gerar manualmente</h2>
+
+<form method="POST" action="/pdde/manual">
+
+<div class="manual-container">
+
+    <div class="manual-topo">
+
+        <div class="campo">
+            <label>Conta Caixa do PDDE</label>
+            <input type="text" name="conta_caixa" required>
+        </div>
+
+        <div class="campo">
+            <label>Conta Receita do PDDE</label>
+            <input type="text" name="conta_receita" required>
+        </div>
+
+        <div class="campo">
+            <label>Saldo Inicial</label>
+            <input type="number" step="0.01"
+                   name="saldo_inicial" required>
+        </div>
+
+    </div>
+
+    <div id="lancamentos-manuais"></div>
+
+	<div class="manual-acoes">
+		<button type="button" onclick="adicionarManual()">
+			+ Adicionar lançamento
+		</button>
+
+		<button type="button" onclick="limparManuais()">
+			Limpar campos
+		</button>
+	</div>
+
+    <button class="btn-gerar-manual" type="submit">
+        Gerar planilha manual
+    </button>
+
+</div>
+
+</form>
+
+{% if erro %}
+    <div class="erro">{{ erro }}</div>
+{% endif %}
+
+<script>
+const dropzone = document.getElementById("dropzone");
+const inputArquivos = document.getElementById("input-arquivos");
+const listaArquivos = document.getElementById("lista-arquivos");
+
+dropzone.addEventListener("click", () => inputArquivos.click());
+
+dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("ativo");
+});
+
+dropzone.addEventListener("dragleave", () => dropzone.classList.remove("ativo"));
+
+dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("ativo");
+    inputArquivos.files = e.dataTransfer.files;
+    mostrarArquivos();
+});
+
+inputArquivos.addEventListener("change", mostrarArquivos);
+
+function criarStatus(nome){
+	let area = document.getElementById("status-documentos");
+	area.innerHTML += `
+	
+	<div id="doc-${nome}" class="documento">
+	
+	📄 Documento ${nome}
+	
+	<br>
+    <label>Conta Caixa do PDDE</label>
+	<br>
+    <input type="text" name="conta_caixa_${nome}" required>
+	<br>
+    <label>Conta de Receita do PDDE</label>
+	<br>
+    <input type="text" name="conta_receita_${nome}" required>
+	</div>
+	`;
+}
+
+function mostrarArquivos() {
+    let nomes = [];
+	let area = document.getElementById("status-documentos");
+	area.innerHTML = ``
+	
+    for (let i = 0; i < inputArquivos.files.length; i++) {
+        nomes.push("📄 " + inputArquivos.files[i].name);
+		
+		let nome = inputArquivos.files[i].name;
+		criarStatus(nome);
+    }
+    listaArquivos.innerHTML = nomes.length
+        ? "<b>Selecionados:</b><br>" + nomes.join("<br>")
+        : "Nenhum arquivo foi selecionado.";
+}
+
+function adicionarManual() {
+    const div = document.createElement("div");
+    div.className = "manual-item";
+
+    div.innerHTML = `
+        <select name="manual_tipo[]" required>
+            <option value="receita">Receita</option>
+            <option value="despesa">Despesa</option>
+        </select>
+
+        <input type="date" name="manual_data[]" required>
+
+        <input type="text" name="manual_historico[]" placeholder="Histórico" required>
+
+        <input type="text" name="manual_descricao[]" placeholder="Material/serviço/observação">
+
+        <input type="number" step="0.01" name="manual_valor[]" placeholder="Valor" required>
+
+        <button type="button" onclick="this.parentElement.remove()">Remover</button>
+    `;
+
+    document.getElementById("lancamentos-manuais").appendChild(div);
+}
+
+function limparManuais() {
+    document.getElementById("lancamentos-manuais").innerHTML = "";
+}
+
+</script>
+
+{% endblock %}
+

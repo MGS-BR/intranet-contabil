@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+Empresas
+{% endblock %}
+
+
+{% block conteudo %}
+<body>
+<h1>Consulta de Empresas</h1>
+
+<hr>
+
+<form method="POST" action="/empresas/atualizar">
+    <button type="submit">Atualizar empresas</button>
+</form>
+
+<div class="links-rapidos">
+<a href="/pendencias">Relatório de Pendências</a>
+</div>
+
+<form method="get">
+    <input type="text" name="busca" placeholder="Pesquisar por razão social, fantasia, CNPJ, situação..." value="{{ busca }}">
+    <button type="submit">Buscar</button>
+</form>
+
+<br>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Razão Social</th>
+        <th>CNPJ</th>
+        <th>Responsável</th>
+        <th>Telefone</th>
+        <th>E-mail</th>
+        <th>Ações</th>
+    </tr>
+
+    {% for empresa in empresas %}
+    <tr>
+        <td>{{ empresa.razao_social or '-' }}</td>
+        <td>{{ empresa.cnpj or '-' }}</td>
+        <td>{{ empresa.responsavel_principal or '-' }}</td>
+        <td>{{ empresa.telefone or '-' }}</td>
+        <td>{{ empresa.email or '-' }}</td>
+        <td><a href="/empresa/{{ empresa.id }}">Visualizar</a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% if not empresas %}
+    <p>Nenhuma empresa encontrada.</p>
+{% endif %}
+</body>
+{% endblock %}

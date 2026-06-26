@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+Certificados
+{% endblock %}
+
+{% block conteudo %}
+
+<body>
+<h1>Certificados da Máquina</h1>
+
+<hr>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Empresa</th>
+        <th>CNPJ</th>
+        <th>Vencimento</th>
+        <th>Dias Restantes</th>
+        <th>Status</th>
+    </tr>
+    {% for cert in certificados %}
+    <tr>
+        <td>{{ cert.empresa }}</td>
+        <td>{{ cert.cnpj }}</td>
+        <td>{{ cert.vencimento }}</td>
+        <td>{{ cert.dias }}</td>
+        <td>{{ cert.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+{% endblock %}

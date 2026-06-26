@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}
+Ajuda e-social
+{% endblock %}
+
+{% block conteudo %}
+
+<body>
+<h1>Erros do e-social</h1>
+
+<hr>
+
+<h2>Cadastrar erro</h2>
+
+<form id="formEsocial" method="POST" action="/ajuda-esocial/cadastrar">
+
+	<input class="input-form" type="text" name="codigo" placeholder="Código do erro" required>
+	<input class="input-form" type="text" name="descriminador" placeholder="Descriminação do erro" required>
+	<textarea class="input-form" name="solucao" rows="5" placeholder="Como resolver o erro" required></textarea>
+
+    <button class="btn-form" type="submit">
+        Cadastrar
+    </button>
+</form>
+
+<hr>
+
+<form method="get">
+    <input type="text" name="busca" placeholder="Pesquisar por código ou descriminador" value="{{ busca }}">
+    <button type="submit">Buscar</button>
+</form>
+
+<br>
+
+<table border="1" cellpadding="8">
+
+    <tr>
+        <th>Código</th>
+        <th>Descriminador</th>
+        <th>Como resolver</th>
+		<th>Ações</th>
+    </tr>
+
+	{% for erro in erros %}
+	<tr>
+		<td>{{ erro[1] }}</td>
+		<td>{{ erro[2] }}</td>
+		<td>{{ erro[3] }}</td>
+		<td>
+			<form
+				method="POST"
+				action="/ajuda-esocial/excluir/{{ erro[0] }}"
+				onsubmit="return confirm('Deseja realmente excluir este erro?');"
+			>
+				<button
+					type="submit"
+					style="
+						background:#dc3545;
+						color:white;
+						border:none;
+						padding:5px 10px;
+						border-radius:4px;
+						cursor:pointer;
+					"
+				>
+					Excluir
+				</button>
+			</form>
+		</td>
+		
+	</tr>
+    {% endfor %}
+</table>
+
+{% if not erros %}
+    <p>Nenhum erro cadastrado.</p>
+{% endif %}
+
+</body>
+{% endblock %}
