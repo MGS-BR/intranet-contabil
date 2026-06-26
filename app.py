@@ -38,9 +38,11 @@ with open("config.json", "r", encoding="utf-8") as arquivo:
 
 PASTAS_PROCEDIMENTOS = config["PASTAS_PROCEDIMENTOS"]
 PASTA_ARQUIVOS = config["PASTA_ARQUIVOS"]
+PASTA_CLIENTES = config["PASTA_CLIENTES"]
 SCRIPT_BACKUP = config["SCRIPT_BACKUP"]
 LOG_BACKUP = config["LOG_BACKUP"]
 SCRIPT_REINICIAR = config["SCRIPT_REINICIAR"]
+SCRIPT_REINICIAR_SITE = config["SCRIPT_REINICIAR_SITE"]
 
 PASTA_UPLOAD_PDDE = config["PASTA_UPLOAD_PDDE"]
 PASTA_SAIDA_PDDE = config["PASTA_SAIDA_PDDE"]
@@ -49,6 +51,10 @@ MODELO_IMPORTACAO_CONTMATIC = config["MODELO_IMPORTACAO_CONTMATIC"]
 
 PASTA_UPLOAD_PDF = config["PASTA_UPLOAD_PDF"]
 PASTA_SAIDA_PDF = config["PASTA_SAIDA_PDF"]
+
+os.makedirs(PASTAS_PROCEDIMENTOS, exist_ok=True)
+os.makedirs(PASTA_ARQUIVOS, exist_ok=True)
+os.makedirs(PASTA_CLIENTES, exist_ok=True)
 
 os.makedirs(PASTA_UPLOAD_PDDE, exist_ok=True)
 os.makedirs(PASTA_SAIDA_PDDE, exist_ok=True)
@@ -807,13 +813,14 @@ def reiniciar_site():
         flash("Senha incorreta.", "erro")
         return redirect("/servidor")
     
-    #subprocess.Popen(r"C:\Scripts\reiniciar_sistema.bat", shell=True)
-    
-    subprocess.Popen('schtasks /run /tn "ReiniciarSistemaInterno"', shell=True)
-    
-    flash("Site reiniciado com sucesso.", "success")
-    
-    return redirect("/servidor")
+    if os.path.exists(SCRIPT_REINICIAR_SITE):
+        subprocess.Popen([SCRIPT_REINICIAR_SITE], shell=True)
+        flash("Site reiniciado com sucesso.", "success")
+        return redirect("/servidor")
+
+    else:
+        flash("Script de reinício do site não encontrado.", "erro")
+        return redirect("/servidor")
 
 @app.route("/empresas")
 def empresas():
@@ -1429,6 +1436,14 @@ def esocial_excluir(id):
 
 
 if __name__ == "__main__":
+
+    def pegar_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+
     print("Iniciando o sitema...")
-    print(f"[OK] IP do servidor: {socket.gethostbyname(socket.gethostname())}")
+    print(f"[OK] IP do servidor: {pegar_ip()}")
     serve(app, host="0.0.0.0", port=8080, threads=8)

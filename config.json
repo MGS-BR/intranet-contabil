@@ -7,6 +7,7 @@
     "SCRIPT_BACKUP": "scripts\\backup.bat",
     "LOG_BACKUP": "scripts\\backup.log",
     "SCRIPT_REINICIAR": "scripts\\reiniciar.bat",
+    "SCRIPT_REINICIAR_SITE": "scripts\\reiniciar_sistema.bat",
 
     "PASTA_UPLOAD_PDDE": "uploads\\pdde",
     "PASTA_SAIDA_PDDE": "saida\\pdde",
