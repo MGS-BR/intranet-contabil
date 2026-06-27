@@ -208,6 +208,30 @@ def garantir_banco():
         )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS eventos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT NOT NULL,
+        descricao TEXT,
+        inicio TEXT,
+        fim TEXT,
+        recorrencia TEXT,
+        intervalo INTEGER DEFAULT 1,
+        dia_recorrencia INTEGER,
+        mes_recorrencia INTEGER,
+        cor TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS esocial (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        codigo TEXT NOT NULL,
+        descriminador TEXT,
+        solucao TEXT
+    )
+    """)
+
     conn.commit()
     conn.close()
 
