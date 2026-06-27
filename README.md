@@ -120,7 +120,7 @@ O banco SQLite é criado/atualizado automaticamente (tanto por `criar_banco.py` 
     - Se não houver, adicione esse caminho manualmente clicando em novo.
     - Informe `C:\Program Files\Tesseract-OCR` se o Tesseract foi instalado no local padrão.
     - Confirme as alterações e pronto.
-5. Caso não tenha sido selecionado o idioma adiconal `portuguese`, faça:
+5. Caso não tenha sido selecionado o idioma adicional `portuguese`, faça:
     - Abra [github.com/tesseract-ocr/tessdata/blob/main/por.traineddata](https://github.com/tesseract-ocr/tessdata/blob/main/por.traineddata).
     - Faça o download do arquivo.
     - Coloque o arquivo na pasta `C:\Program Files\Tesseract-OCR\tessdata`.
