@@ -698,8 +698,12 @@ def gerar_planilha_manual_pdde(
 
     linha += 1
 
-    receitas = [lancamento for lancamento in lancamentos if lancamento["tipo"] == "receita"]
-    despesas = [lancamento for lancamento in lancamentos if lancamento["tipo"] == "despesa"]
+    receitas = [
+        lancamento for lancamento in lancamentos if lancamento["tipo"] == "receita"
+    ]
+    despesas = [
+        lancamento for lancamento in lancamentos if lancamento["tipo"] == "despesa"
+    ]
 
     for lancamento in receitas:
         saldo += lancamento["valor"]

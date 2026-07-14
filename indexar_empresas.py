@@ -74,13 +74,13 @@ def valor_apos_rotulo(texto, rotulos, ignorar_valores=None):
 
         for rotulo in norm_rotulos:
             if nlinha == rotulo:
-                for prox in linhas[i + 1: i + 5]:
+                for prox in linhas[i + 1 : i + 5]:
                     nprox = normalizar_texto(prox)
                     if nprox and nprox not in ignorar:
                         return prox
 
             if nlinha.startswith(rotulo + " "):
-                valor = linha[len(rotulos[norm_rotulos.index(rotulo)]):].strip(" :-")
+                valor = linha[len(rotulos[norm_rotulos.index(rotulo)]) :].strip(" :-")
                 if valor and normalizar_texto(valor) not in ignorar:
                     return valor
 

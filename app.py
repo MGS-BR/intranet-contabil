@@ -1438,7 +1438,7 @@ def pdde_manual():
     )
 
     if "400" in gerador:
-        flash(f"{gerador["400"]}", "erro")
+        flash(f"{gerador['400']}", "erro")
         return redirect("/pdde")
 
     return send_file(
