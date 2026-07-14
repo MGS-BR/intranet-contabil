@@ -37,7 +37,7 @@ jobs:
       run: python -m pip install --upgrade pip
 
     - name: Verificar sintaxe
-      run: python -m py_compile main.py
+      run: python -m py_compile app.py
 
     - name: Format check (Black)
       run: |
