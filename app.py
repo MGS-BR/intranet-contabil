@@ -39,6 +39,8 @@ with open("config.json", "r", encoding="utf-8") as arquivo:
 PASTAS_PROCEDIMENTOS = config["PASTAS_PROCEDIMENTOS"]
 PASTA_ARQUIVOS = config["PASTA_ARQUIVOS"]
 PASTA_CLIENTES = config["PASTA_CLIENTES"]
+PASTA_APMS = config["PASTA_APMS"]
+
 SCRIPT_BACKUP = config["SCRIPT_BACKUP"]
 LOG_BACKUP = config["LOG_BACKUP"]
 SCRIPT_REINICIAR = config["SCRIPT_REINICIAR"]
@@ -52,15 +54,22 @@ MODELO_IMPORTACAO_CONTMATIC = config["MODELO_IMPORTACAO_CONTMATIC"]
 PASTA_UPLOAD_PDF = config["PASTA_UPLOAD_PDF"]
 PASTA_SAIDA_PDF = config["PASTA_SAIDA_PDF"]
 
+PASTA_ORGANIZADORA_ARQUIVOS = config["PASTA_ORGANIZADORA_ARQUIVOS"]
+PASTA_ORGANIZADORA_LOGS = config["PASTA_ORGANIZADORA_LOGS"]
+
 os.makedirs(PASTAS_PROCEDIMENTOS, exist_ok=True)
 os.makedirs(PASTA_ARQUIVOS, exist_ok=True)
 os.makedirs(PASTA_CLIENTES, exist_ok=True)
+os.makedirs(PASTA_APMS, exist_ok=True)
 
 os.makedirs(PASTA_UPLOAD_PDDE, exist_ok=True)
 os.makedirs(PASTA_SAIDA_PDDE, exist_ok=True)
 
 os.makedirs(PASTA_UPLOAD_PDF, exist_ok=True)
 os.makedirs(PASTA_SAIDA_PDF, exist_ok=True)
+
+os.makedirs(PASTA_ORGANIZADORA_ARQUIVOS, exist_ok=True)
+os.makedirs(PASTA_ORGANIZADORA_LOGS, exist_ok=True)
 
 tarefas_ocr = {}
 
@@ -229,6 +238,15 @@ def garantir_banco():
         codigo TEXT NOT NULL,
         descriminador TEXT,
         solucao TEXT
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS organizadora (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        regra TEXT,
+        pasta TEXT
+        data BOOLEAN DEFAULT TRUE
     )
     """)
 

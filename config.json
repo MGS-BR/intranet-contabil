@@ -2,6 +2,7 @@
     "PASTAS_PROCEDIMENTOS": "exemplos\\procedimentos",
     "PASTA_ARQUIVOS": "exemplos\\arquivos",
     "PASTA_CLIENTES": "exemplos\\clientes",
+	"PASTA_APMS": "exemplos\\clientes\\APMS"
     "PASTA_BACKUP": "exemplos\\backup",
 
     "SCRIPT_BACKUP": "scripts\\backup.bat",
@@ -15,5 +16,8 @@
     "MODELO_IMPORTACAO_CONTMATIC": "modelos\\Planilha Importação Contmatic.xlsx",
 
     "PASTA_UPLOAD_PDF": "uploads\\pdf",
-    "PASTA_SAIDA_PDF": "saida\\pdf"
+    "PASTA_SAIDA_PDF": "saida\\pdf",
+	
+	"PASTA_ORGANIZADORA_ARQUIVOS": "exemplos\\pasta organizadora\\arquivos",
+	"PASTA_ORGANIZADORA_LOGS": "exemplos\\pasta organizadora\\logs"
 }

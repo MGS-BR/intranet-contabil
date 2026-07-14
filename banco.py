@@ -154,6 +154,15 @@ def criar_tabelas():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS organizadora (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        regra TEXT,
+        pasta TEXT
+        data BOOLEAN DEFAULT TRUE
+    )
+    """)
+
     conn.commit()
     conn.close()
     print("Banco criado/atualizado com sucesso.")
