@@ -1,4 +1,6 @@
 *.env
 *.zip
+*.db
 venv/
 __pycache__/
+exemplos/
