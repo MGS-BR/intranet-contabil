@@ -47,9 +47,7 @@ for coluna, tipo in {
     "modificado_em": "TEXT",
 }.items():
     if coluna not in colunas:
-        cursor.execute(
-            f"ALTER TABLE indice_arquivos ADD COLUMN {coluna} {tipo}"
-        )
+        cursor.execute(f"ALTER TABLE indice_arquivos ADD COLUMN {coluna} {tipo}")
 
 cursor.execute("""
     CREATE INDEX IF NOT EXISTS idx_indice_nome
@@ -72,10 +70,7 @@ if not os.path.isdir(PASTA_RAIZ):
 else:
     for raiz, pastas, arquivos in os.walk(PASTA_RAIZ):
 
-        pastas[:] = [
-            p for p in pastas
-            if p not in PASTAS_IGNORADAS
-        ]
+        pastas[:] = [p for p in pastas if p not in PASTAS_IGNORADAS]
 
         for arquivo in arquivos:
 
@@ -95,15 +90,9 @@ else:
             try:
                 stat = os.stat(caminho_completo)
 
-                caminho_relativo = os.path.relpath(
-                    caminho_completo,
-                    PASTA_RAIZ
-                )
+                caminho_relativo = os.path.relpath(caminho_completo, PASTA_RAIZ)
 
-                pasta_relativa = os.path.relpath(
-                    raiz,
-                    PASTA_RAIZ
-                )
+                pasta_relativa = os.path.relpath(raiz, PASTA_RAIZ)
 
                 if pasta_relativa == ".":
                     pasta_relativa = ""
@@ -111,13 +100,14 @@ else:
                 extensao = os.path.splitext(arquivo)[1].lower()
 
                 try:
-                    modificado_em = datetime.fromtimestamp(
-                        stat.st_mtime
-                    ).strftime("%d/%m/%Y %H:%M")
+                    modificado_em = datetime.fromtimestamp(stat.st_mtime).strftime(
+                        "%d/%m/%Y %H:%M"
+                    )
                 except (OSError, OverflowError, ValueError):
                     modificado_em = "Data inválida"
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO indice_arquivos
                     (
                         nome,
@@ -128,14 +118,16 @@ else:
                         modificado_em
                     )
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    arquivo,
-                    caminho_relativo,
-                    pasta_relativa,
-                    extensao,
-                    stat.st_size,
-                    modificado_em
-                ))
+                """,
+                    (
+                        arquivo,
+                        caminho_relativo,
+                        pasta_relativa,
+                        extensao,
+                        stat.st_size,
+                        modificado_em,
+                    ),
+                )
 
                 contador += 1
 

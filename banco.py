@@ -2,6 +2,7 @@ import sqlite3
 
 BANCO = "banco.db"
 
+
 def conectar():
     return sqlite3.connect(BANCO)
 
@@ -35,8 +36,12 @@ def criar_tabelas():
     }.items():
         adicionar_coluna(cursor, "indice_arquivos", coluna, tipo)
 
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_indice_nome ON indice_arquivos(nome)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_indice_caminho ON indice_arquivos(caminho)")
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_indice_nome ON indice_arquivos(nome)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_indice_caminho ON indice_arquivos(caminho)"
+    )
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS empresas (
@@ -96,9 +101,13 @@ def criar_tabelas():
         adicionar_coluna(cursor, "empresas", coluna, tipo)
 
     try:
-        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_empresas_cnpj_unico ON empresas(cnpj)")
+        cursor.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_empresas_cnpj_unico ON empresas(cnpj)"
+        )
     except sqlite3.OperationalError:
-        print("Aviso: não foi possível criar índice único em empresas.cnpj. Verifique CNPJs duplicados.")
+        print(
+            "Aviso: não foi possível criar índice único em empresas.cnpj. Verifique CNPJs duplicados."
+        )
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS socios_empresas (
@@ -108,7 +117,9 @@ def criar_tabelas():
             qualificacao TEXT
         )
     """)
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios_empresas(cnpj_empresa)")
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios_empresas(cnpj_empresa)"
+    )
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS funcionarios_horas (

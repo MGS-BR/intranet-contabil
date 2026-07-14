@@ -13,6 +13,7 @@ PASTA_ARQUIVOS = config["PASTA_ARQUIVOS"]
 PASTA_RAIZ = config["PASTA_CLIENTES"]
 BANCO = "banco.db"
 
+
 def normalizar_texto(texto):
     texto = unicodedata.normalize("NFKD", texto or "")
     texto = "".join(c for c in texto if not unicodedata.combining(c))
@@ -73,13 +74,13 @@ def valor_apos_rotulo(texto, rotulos, ignorar_valores=None):
 
         for rotulo in norm_rotulos:
             if nlinha == rotulo:
-                for prox in linhas[i + 1:i + 5]:
+                for prox in linhas[i + 1 : i + 5]:
                     nprox = normalizar_texto(prox)
                     if nprox and nprox not in ignorar:
                         return prox
 
             if nlinha.startswith(rotulo + " "):
-                valor = linha[len(rotulos[norm_rotulos.index(rotulo)]):].strip(" :-")
+                valor = linha[len(rotulos[norm_rotulos.index(rotulo)]) :].strip(" :-")
                 if valor and normalizar_texto(valor) not in ignorar:
                     return valor
 
@@ -138,11 +139,29 @@ def extrair_dados_cnpj_pdf(caminho):
         dados["cnpj"] = formatar_cnpj(match.group(0))
 
     dados["razao_social"] = valor_apos_rotulo(texto, "NOME EMPRESARIAL")
-    dados["nome_fantasia"] = valor_apos_rotulo(texto, ["TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)", "TITULO DO ESTABELECIMENTO (NOME DE FANTASIA)"])
+    dados["nome_fantasia"] = valor_apos_rotulo(
+        texto,
+        [
+            "TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)",
+            "TITULO DO ESTABELECIMENTO (NOME DE FANTASIA)",
+        ],
+    )
     dados["porte"] = valor_apos_rotulo(texto, "PORTE")
     dados["data_abertura"] = valor_apos_rotulo(texto, "DATA DE ABERTURA")
-    dados["atividade_principal"] = valor_apos_rotulo(texto, ["CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL", "CODIGO E DESCRICAO DA ATIVIDADE ECONOMICA PRINCIPAL"])
-    dados["natureza_juridica"] = valor_apos_rotulo(texto, ["CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA", "CODIGO E DESCRICAO DA NATUREZA JURIDICA"])
+    dados["atividade_principal"] = valor_apos_rotulo(
+        texto,
+        [
+            "CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL",
+            "CODIGO E DESCRICAO DA ATIVIDADE ECONOMICA PRINCIPAL",
+        ],
+    )
+    dados["natureza_juridica"] = valor_apos_rotulo(
+        texto,
+        [
+            "CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA",
+            "CODIGO E DESCRICAO DA NATUREZA JURIDICA",
+        ],
+    )
     dados["logradouro"] = valor_apos_rotulo(texto, "LOGRADOURO")
     dados["numero"] = valor_apos_rotulo(texto, ["NÚMERO", "NUMERO"])
     dados["complemento"] = valor_apos_rotulo(texto, "COMPLEMENTO")
@@ -150,10 +169,16 @@ def extrair_dados_cnpj_pdf(caminho):
     dados["bairro"] = valor_apos_rotulo(texto, ["BAIRRO/DISTRITO", "BAIRRO / DISTRITO"])
     dados["municipio"] = valor_apos_rotulo(texto, ["MUNICÍPIO", "MUNICIPIO"])
     dados["uf"] = valor_apos_rotulo(texto, "UF")
-    dados["email"] = valor_apos_rotulo(texto, ["ENDEREÇO ELETRÔNICO", "ENDERECO ELETRONICO"])
+    dados["email"] = valor_apos_rotulo(
+        texto, ["ENDEREÇO ELETRÔNICO", "ENDERECO ELETRONICO"]
+    )
     dados["telefone"] = valor_apos_rotulo(texto, "TELEFONE")
-    dados["situacao_cadastral"] = valor_apos_rotulo(texto, ["SITUAÇÃO CADASTRAL", "SITUACAO CADASTRAL"])
-    dados["data_situacao_cadastral"] = valor_apos_rotulo(texto, ["DATA DA SITUAÇÃO CADASTRAL", "DATA DA SITUACAO CADASTRAL"])
+    dados["situacao_cadastral"] = valor_apos_rotulo(
+        texto, ["SITUAÇÃO CADASTRAL", "SITUACAO CADASTRAL"]
+    )
+    dados["data_situacao_cadastral"] = valor_apos_rotulo(
+        texto, ["DATA DA SITUAÇÃO CADASTRAL", "DATA DA SITUACAO CADASTRAL"]
+    )
 
     # Limpa valores comuns que não são dados reais.
     for chave, valor in list(dados.items()):
@@ -168,17 +193,14 @@ def extrair_dados_cnpj_pdf(caminho):
 def extrair_qsa_pdf(caminho):
     texto = ler_texto_pdf(caminho)
 
-    dados = {
-        "cnpj": "",
-        "razao_social": "",
-        "capital_social": "",
-        "socios": []
-    }
+    dados = {"cnpj": "", "razao_social": "", "capital_social": "", "socios": []}
 
     if not eh_qsa_receita(texto):
         return dados
 
-    match = re.search(r"CNPJ:\s*(\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})", texto, re.IGNORECASE)
+    match = re.search(
+        r"CNPJ:\s*(\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2})", texto, re.IGNORECASE
+    )
     if match:
         dados["cnpj"] = formatar_cnpj(match.group(1))
 
@@ -193,7 +215,7 @@ def extrair_qsa_pdf(caminho):
     blocos = re.findall(
         r"Nome/Nome Empresarial:\s*(.*?)\s*Qualificação:\s*(.*?)(?=Nome/Nome Empresarial:|Para informações|Emitido|Voltar|$)",
         texto,
-        re.IGNORECASE | re.DOTALL
+        re.IGNORECASE | re.DOTALL,
     )
 
     for nome, qualificacao in blocos:
@@ -201,10 +223,7 @@ def extrair_qsa_pdf(caminho):
         qualificacao = limpar_linha(qualificacao)
 
         if nome and qualificacao:
-            dados["socios"].append({
-                "nome": nome,
-                "qualificacao": qualificacao
-            })
+            dados["socios"].append({"nome": nome, "qualificacao": qualificacao})
 
     return dados
 
@@ -257,7 +276,7 @@ def encontrar_empresas():
         empresas[nome_empresa] = {
             "pasta": pasta_empresa,
             "cnpj_arquivo": cnpj_arquivo,
-            "qsa_arquivo": qsa_arquivo
+            "qsa_arquivo": qsa_arquivo,
         }
 
     return empresas
@@ -330,9 +349,13 @@ def garantir_tabelas(cursor):
         adicionar_coluna(cursor, "empresas", coluna, tipo)
 
     try:
-        cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_empresas_cnpj_unico ON empresas(cnpj)")
+        cursor.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_empresas_cnpj_unico ON empresas(cnpj)"
+        )
     except sqlite3.OperationalError:
-        print("[AVISO] Não consegui criar índice único em empresas.cnpj. Verifique CNPJs duplicados.")
+        print(
+            "[AVISO] Não consegui criar índice único em empresas.cnpj. Verifique CNPJs duplicados."
+        )
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS socios_empresas (
@@ -343,7 +366,9 @@ def garantir_tabelas(cursor):
         )
     """)
 
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios_empresas(cnpj_empresa)")
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios_empresas(cnpj_empresa)"
+    )
 
 
 def salvar_empresas(empresas):
@@ -364,7 +389,9 @@ def salvar_empresas(empresas):
         cnpj = dados_cnpj["cnpj"]
 
         if not cnpj:
-            print(f"[ERRO] PDF identificado como CNPJ, mas sem CNPJ extraído: {nome_pasta}")
+            print(
+                f"[ERRO] PDF identificado como CNPJ, mas sem CNPJ extraído: {nome_pasta}"
+            )
             continue
 
         razao_social = dados_cnpj["razao_social"] or nome_pasta
@@ -382,7 +409,8 @@ def salvar_empresas(empresas):
             else:
                 print(f"[AVISO] QSA ignorado por CNPJ diferente: {nome_pasta}")
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO empresas (
                 cnpj,
                 razao_social,
@@ -432,50 +460,48 @@ def salvar_empresas(empresas):
                 cnpj_arquivo = excluded.cnpj_arquivo,
                 qsa_arquivo = excluded.qsa_arquivo,
                 atualizado_em = excluded.atualizado_em
-        """, (
-            cnpj,
-            razao_social,
-            dados_cnpj["nome_fantasia"],
-            dados_cnpj["porte"],
-            dados_cnpj["data_abertura"],
-            dados_cnpj["situacao_cadastral"],
-            dados_cnpj["data_situacao_cadastral"],
-            dados_cnpj["natureza_juridica"],
-            dados_cnpj["atividade_principal"],
-            capital_social,
-            dados_cnpj["telefone"],
-            dados_cnpj["email"],
-            dados_cnpj["logradouro"],
-            dados_cnpj["numero"],
-            dados_cnpj["complemento"],
-            dados_cnpj["bairro"],
-            dados_cnpj["municipio"],
-            dados_cnpj["uf"],
-            dados_cnpj["cep"],
-            caminho_relativo(pasta_empresa),
-            caminho_relativo(cnpj_arquivo),
-            caminho_relativo(qsa_arquivo) if qsa_arquivo else "",
-            datetime.now().strftime("%d/%m/%Y %H:%M")
-        ))
-
-        cursor.execute(
-            "DELETE FROM socios_empresas WHERE cnpj_empresa = ?",
-            (cnpj,)
+        """,
+            (
+                cnpj,
+                razao_social,
+                dados_cnpj["nome_fantasia"],
+                dados_cnpj["porte"],
+                dados_cnpj["data_abertura"],
+                dados_cnpj["situacao_cadastral"],
+                dados_cnpj["data_situacao_cadastral"],
+                dados_cnpj["natureza_juridica"],
+                dados_cnpj["atividade_principal"],
+                capital_social,
+                dados_cnpj["telefone"],
+                dados_cnpj["email"],
+                dados_cnpj["logradouro"],
+                dados_cnpj["numero"],
+                dados_cnpj["complemento"],
+                dados_cnpj["bairro"],
+                dados_cnpj["municipio"],
+                dados_cnpj["uf"],
+                dados_cnpj["cep"],
+                caminho_relativo(pasta_empresa),
+                caminho_relativo(cnpj_arquivo),
+                caminho_relativo(qsa_arquivo) if qsa_arquivo else "",
+                datetime.now().strftime("%d/%m/%Y %H:%M"),
+            ),
         )
 
+        cursor.execute("DELETE FROM socios_empresas WHERE cnpj_empresa = ?", (cnpj,))
+
         for socio in socios:
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO socios_empresas (
                     cnpj_empresa,
                     nome,
                     qualificacao
                 )
                 VALUES (?, ?, ?)
-            """, (
-                cnpj,
-                socio["nome"],
-                socio["qualificacao"]
-            ))
+            """,
+                (cnpj, socio["nome"], socio["qualificacao"]),
+            )
 
         print(f"[OK] {cnpj} - {razao_social}")
 

@@ -7,73 +7,57 @@ from openpyxl import load_workbook, Workbook
 REGRAS_CONTAS_DESPESAS = [
     ("INSS SOBRE", "77"),
     ("INSS RETIDO", "77"),
-
     ("TECNOLOGIA E INOVACAO", "136"),
     ("TECNOLOGIA E INOVAÇÃO", "136"),
-
     ("OUTROS SERVICOS", "72"),
     ("OUTROS SERVIÇOS", "72"),
-
     ("SERVICOS DE ELETRICISTA", "128"),
     ("SERVIÇOS DE ELETRICISTA", "128"),
-
     ("AQUISICAO DE VENTILADORES", "251"),
     ("AQUISIÇÃO DE VENTILADORES", "251"),
     ("VENTILADORES", "251"),
     ("VENTILADOR", "251"),
-
     ("EQUIPAMENTOS PARA REFRIGERACAO", "251"),
     ("EQUIPAMENTOS PARA REFRIGERAÇÃO", "251"),
     ("CONDICIONAMENTO", "251"),
     ("CIRCULACAO DE AR", "251"),
     ("CIRCULAÇÃO DE AR", "251"),
-
     ("MANUTENCAO PARA EQUIPAMENTOS DE INFORMATICA", "71"),
     ("MANUTENÇÃO PARA EQUIPAMENTOS DE INFORMÁTICA", "71"),
     ("SERVICO DE MANUTENCAO EM EQUIPTO DE INFORMATICA", "71"),
     ("SERVIÇO DE MANUTENÇÃO EM EQUIPTO DE INFORMÁTICA", "71"),
     ("IMPRESSORA", "71"),
-
     ("SERVICOS GERAIS INTERNOS", "180"),
     ("SERVIÇOS GERAIS INTERNOS", "180"),
     ("SERVICOS GERAIS", "180"),
     ("SERVIÇOS GERAIS", "180"),
-
     ("SERVICOS DE DESINSETIZACAO", "128"),
     ("SERVIÇOS DE DESINSETIZAÇÃO", "128"),
     ("DESINSETIZACAO", "128"),
     ("DESINSETIZAÇÃO", "128"),
-
     ("SERVICOS DE IMUNIZACAO", "128"),
     ("SERVIÇOS DE IMUNIZAÇÃO", "128"),
     ("IMUNIZACAO", "128"),
     ("IMUNIZAÇÃO", "128"),
     ("HIGIENIZACAO", "128"),
     ("HIGIENIZAÇÃO", "128"),
-
     ("SERVICOS DE JARDINAGEM", "128"),
     ("SERVIÇOS DE JARDINAGEM", "128"),
     ("JARDINAGEM", "128"),
-
     ("SERVICOS DE ENCANADOR", "128"),
     ("SERVIÇOS DE ENCANADOR", "128"),
     ("ENCANADOR", "128"),
-
     ("SERVICOS DE RECARGA DE EXTINTORES", "254"),
     ("SERVIÇOS DE RECARGA DE EXTINTORES", "254"),
     ("RECARGA DE EXTINTORES", "254"),
     ("EXTINTORES", "254"),
-
     ("MANUTENCAO E PEQUENOS REPAROS", "128"),
     ("MANUTENÇÃO E PEQUENOS REPAROS", "128"),
     ("PEQUENOS REPAROS", "128"),
-
     ("HIGIENE E LIMPEZA", "94"),
     ("LIMPEZA", "94"),
-
     ("MOBILIARIOS, EQUIPAMENTOS E UTENSILIOS", "251"),
     ("MOBILIÁRIOS, EQUIPAMENTOS E UTENSÍLIOS", "251"),
-
     ("MATERIAIS E SERVICOS PEDAGOGICOS", "224"),
     ("MATERIAIS E SERVIÇOS PEDAGÓGICOS", "224"),
     ("MATERIAIS PEDAGOGICOS", "224"),
@@ -81,6 +65,7 @@ REGRAS_CONTAS_DESPESAS = [
 ]
 CONTA_RENDIMENTOS = "120"  # RENDIMENTOS DE APLICAÇÕES FINANCEIRAS
 CONTA_RECURSOS_PROPRIOS = "202"  # RECURSOS PRÓPRIOS
+
 
 def limpar_texto(valor):
     if valor is None:
@@ -91,10 +76,16 @@ def limpar_texto(valor):
 def normalizar(valor):
     valor = limpar_texto(valor).upper()
     troca = {
-        "Á": "A", "À": "A", "Â": "A", "Ã": "A",
-        "É": "E", "Ê": "E",
+        "Á": "A",
+        "À": "A",
+        "Â": "A",
+        "Ã": "A",
+        "É": "E",
+        "Ê": "E",
         "Í": "I",
-        "Ó": "O", "Ô": "O", "Õ": "O",
+        "Ó": "O",
+        "Ô": "O",
+        "Õ": "O",
         "Ú": "U",
         "Ç": "C",
     }
@@ -139,8 +130,12 @@ def extrair_sintese(texto):
     if m:
         bloco = m.group(0)
 
-    valores_c = [br_para_float(x) for x in re.findall(r"\(C\)\s*=\s*([\d\.]+,\d{2})", bloco)]
-    valores_k = [br_para_float(x) for x in re.findall(r"\(K\)\s*=\s*([\d\.]+,\d{2})", bloco)]
+    valores_c = [
+        br_para_float(x) for x in re.findall(r"\(C\)\s*=\s*([\d\.]+,\d{2})", bloco)
+    ]
+    valores_k = [
+        br_para_float(x) for x in re.findall(r"\(K\)\s*=\s*([\d\.]+,\d{2})", bloco)
+    ]
 
     def soma_indice(i):
         c = valores_c[i] if len(valores_c) > i else 0.0
@@ -201,9 +196,7 @@ def extrair_pagamentos(texto):
         cnpj = cnpj_match.group(0) if cnpj_match else ""
 
         nat_match = re.search(
-            r"\s([CK])\s+(?:NFEV|NFES|NFS|NFE|NF|GPS|DARF)",
-            resto,
-            re.IGNORECASE
+            r"\s([CK])\s+(?:NFEV|NFES|NFS|NFE|NF|GPS|DARF)", resto, re.IGNORECASE
         )
         nat = nat_match.group(1).upper() if nat_match else ""
 
@@ -218,28 +211,26 @@ def extrair_pagamentos(texto):
                 partes = re.split(
                     rf"\s{nat}\s+(?:NFEV|NFES|NFS|NFE|NF|GPS|DARF)",
                     depois,
-                    flags=re.IGNORECASE
+                    flags=re.IGNORECASE,
                 )
                 material = limpar_texto(partes[0])
             else:
                 material = limpar_texto(depois)
         else:
-            material = re.sub(
-                r"\d{1,3}(?:\.\d{3})*,\d{2}.*",
-                "",
-                resto
-            )
+            material = re.sub(r"\d{1,3}(?:\.\d{3})*,\d{2}.*", "", resto)
             material = limpar_texto(material)
 
-        pagamentos.append({
-            "item": item,
-            "fornecedor": fornecedor,
-            "cnpj": cnpj,
-            "material": material,
-            "natureza": nat,
-            "data_pagamento": data_pagamento,
-            "valor": valor,
-        })
+        pagamentos.append(
+            {
+                "item": item,
+                "fornecedor": fornecedor,
+                "cnpj": cnpj,
+                "material": material,
+                "natureza": nat,
+                "data_pagamento": data_pagamento,
+                "valor": valor,
+            }
+        )
 
     for linha in linhas:
         linha = linha.strip()
@@ -295,6 +286,7 @@ def extrair_plano_contas(caminho_plano_pdf):
 
     return contas
 
+
 def grupo_da_conta(conta_reduzida, plano_contas):
     conta_reduzida = str(conta_reduzida).strip()
 
@@ -311,24 +303,113 @@ def grupo_da_conta(conta_reduzida, plano_contas):
 
     # Correção manual para contas que o PDF pode não ler direito
     RECEITAS_PDDE = {
-        "125", "126", "151", "152", "154", "159", "161",
-        "187", "194", "195", "196", "198", "201", "204",
-        "206", "208", "209", "217", "219", "221", "223",
-        "227", "229", "231", "233", "235", "237", "239",
-        "242", "243", "245", "247", "249", "252",
-        "116", "117", "120", "202", "212"
+        "125",
+        "126",
+        "151",
+        "152",
+        "154",
+        "159",
+        "161",
+        "187",
+        "194",
+        "195",
+        "196",
+        "198",
+        "201",
+        "204",
+        "206",
+        "208",
+        "209",
+        "217",
+        "219",
+        "221",
+        "223",
+        "227",
+        "229",
+        "231",
+        "233",
+        "235",
+        "237",
+        "239",
+        "242",
+        "243",
+        "245",
+        "247",
+        "249",
+        "252",
+        "116",
+        "117",
+        "120",
+        "202",
+        "212",
     }
 
     DESPESAS_PDDE = {
-        "97", "98", "251", "82", "83", "84", "85", "86",
-        "87", "127", "128", "160", "165", "166", "254",
-        "65", "66", "67", "68", "73", "74", "75", "76",
-        "177", "69", "70", "71", "72", "183", "184",
-        "135", "80", "157", "158", "77", "78", "162",
-        "163", "81", "88", "89", "90", "91", "92", "93",
-        "94", "95", "96", "136", "101", "102", "190",
-        "42", "53", "52", "180", "182", "188", "189",
-        "253", "106", "107", "153", "175", "211"
+        "97",
+        "98",
+        "251",
+        "82",
+        "83",
+        "84",
+        "85",
+        "86",
+        "87",
+        "127",
+        "128",
+        "160",
+        "165",
+        "166",
+        "254",
+        "65",
+        "66",
+        "67",
+        "68",
+        "73",
+        "74",
+        "75",
+        "76",
+        "177",
+        "69",
+        "70",
+        "71",
+        "72",
+        "183",
+        "184",
+        "135",
+        "80",
+        "157",
+        "158",
+        "77",
+        "78",
+        "162",
+        "163",
+        "81",
+        "88",
+        "89",
+        "90",
+        "91",
+        "92",
+        "93",
+        "94",
+        "95",
+        "96",
+        "136",
+        "101",
+        "102",
+        "190",
+        "42",
+        "53",
+        "52",
+        "180",
+        "182",
+        "188",
+        "189",
+        "253",
+        "106",
+        "107",
+        "153",
+        "175",
+        "211",
     }
 
     if conta_reduzida in RECEITAS_PDDE:
@@ -338,6 +419,7 @@ def grupo_da_conta(conta_reduzida, plano_contas):
         return "despesa"
 
     return ""
+
 
 def validar_conta_por_tipo(conta_reduzida, tipo, plano_contas):
     grupo = grupo_da_conta(conta_reduzida, plano_contas)
@@ -363,6 +445,7 @@ def garantir_conta_valida(conta_reduzida, tipo, plano_contas, fallback):
         f"Também não foi possível usar a conta padrão {fallback}."
     )
 
+
 def classificar_conta_despesa(pagamento, plano_contas):
     texto = normalizar(
         f"{pagamento.get('fornecedor','')} {pagamento.get('material','')}"
@@ -381,12 +464,8 @@ def classificar_conta_despesa(pagamento, plano_contas):
         else:
             conta_encontrada = "180"
 
-    return garantir_conta_valida(
-        conta_encontrada,
-        "despesa",
-        plano_contas,
-        "180"
-    )
+    return garantir_conta_valida(conta_encontrada, "despesa", plano_contas, "180")
+
 
 def classificar_conta_receita(lancamento, plano_contas, conta_receita_pdde):
     texto = normalizar(
@@ -400,10 +479,7 @@ def classificar_conta_receita(lancamento, plano_contas, conta_receita_pdde):
         or "INVESTIMENTO" in texto
     ):
         return garantir_conta_valida(
-            CONTA_RENDIMENTOS,
-            "receita",
-            plano_contas,
-            CONTA_RENDIMENTOS
+            CONTA_RENDIMENTOS, "receita", plano_contas, CONTA_RENDIMENTOS
         )
 
     if (
@@ -413,18 +489,14 @@ def classificar_conta_receita(lancamento, plano_contas, conta_receita_pdde):
         or "RECURSO PRÓPRIO" in texto
     ):
         return garantir_conta_valida(
-            CONTA_RECURSOS_PROPRIOS,
-            "receita",
-            plano_contas,
-            CONTA_RECURSOS_PROPRIOS
+            CONTA_RECURSOS_PROPRIOS, "receita", plano_contas, CONTA_RECURSOS_PROPRIOS
         )
 
     return garantir_conta_valida(
-        conta_receita_pdde,
-        "receita",
-        plano_contas,
-        conta_receita_pdde
+        conta_receita_pdde, "receita", plano_contas, conta_receita_pdde
     )
+
+
 def historico_pagamento(pagamento):
     if pagamento.get("fornecedor"):
         return pagamento["fornecedor"]
@@ -437,7 +509,9 @@ def escrever_linha(sheet, linha, data, debito, credito, valor, historico, saldo)
     sheet.cell(row=linha, column=1).value = data
     sheet.cell(row=linha, column=2).value = str(debito) if debito else ""
     sheet.cell(row=linha, column=3).value = str(credito) if credito else ""
-    sheet.cell(row=linha, column=4).value = float_para_br(valor) if valor not in (None, "") else ""
+    sheet.cell(row=linha, column=4).value = (
+        float_para_br(valor) if valor not in (None, "") else ""
+    )
     sheet.cell(row=linha, column=5).value = historico
     sheet.cell(row=linha, column=6).value = float_para_br(saldo)
 
@@ -459,20 +533,16 @@ def gerar_planilha_importacao(
     conta_receita_pdde = str(conta_receita_pdde).strip()
 
     if not validar_conta_por_tipo(conta_receita_pdde, "receita", plano):
-        return {"400": f"A conta de receita informada ({conta_receita_pdde}) não pertence ao grupo 4 - Receitas."}
+        return {
+            "400": f"A conta de receita informada ({conta_receita_pdde}) não pertence ao grupo 4 - Receitas."
+        }
 
     CONTA_RENDIMENTOS_VALIDADA = garantir_conta_valida(
-        CONTA_RENDIMENTOS,
-        "receita",
-        plano,
-        "120"
+        CONTA_RENDIMENTOS, "receita", plano, "120"
     )
 
     CONTA_RECURSOS_PROPRIOS_VALIDADA = garantir_conta_valida(
-        CONTA_RECURSOS_PROPRIOS,
-        "receita",
-        plano,
-        "202"
+        CONTA_RECURSOS_PROPRIOS, "receita", plano, "202"
     )
 
     if caminho_modelo_xlsx and os.path.exists(caminho_modelo_xlsx):
@@ -501,33 +571,42 @@ def gerar_planilha_importacao(
     if sintese["valor_creditado_fnde"] > 0:
         saldo += sintese["valor_creditado_fnde"]
         escrever_linha(
-            ws, linha, data_receita,
-            conta_caixa, conta_receita_pdde,
+            ws,
+            linha,
+            data_receita,
+            conta_caixa,
+            conta_receita_pdde,
             sintese["valor_creditado_fnde"],
             "REPASSE PDDE - FNDE",
-            saldo
+            saldo,
         )
         linha += 1
 
     if sintese["recursos_proprios"] > 0:
         saldo += sintese["recursos_proprios"]
         escrever_linha(
-            ws, linha, data_receita,
-            conta_caixa, CONTA_RECURSOS_PROPRIOS_VALIDADA,
+            ws,
+            linha,
+            data_receita,
+            conta_caixa,
+            CONTA_RECURSOS_PROPRIOS_VALIDADA,
             sintese["recursos_proprios"],
             "RECURSOS PRÓPRIOS PDDE",
-            saldo
+            saldo,
         )
         linha += 1
 
     if sintese["rendimento_aplicacao"] > 0:
         saldo += sintese["rendimento_aplicacao"]
         escrever_linha(
-            ws, linha, data_receita,
-            conta_caixa, CONTA_RENDIMENTOS_VALIDADA,
+            ws,
+            linha,
+            data_receita,
+            conta_caixa,
+            CONTA_RENDIMENTOS_VALIDADA,
             sintese["rendimento_aplicacao"],
             "RENDIMENTOS DE APLICAÇÕES FINANCEIRAS",
-            saldo
+            saldo,
         )
         linha += 1
 
@@ -539,16 +618,19 @@ def gerar_planilha_importacao(
         saldo -= p["valor"]
 
         if conta_despesa not in plano:
-            avisos.append(f"Conta {conta_despesa} não encontrada no plano para item {p['item']}")
+            avisos.append(
+                f"Conta {conta_despesa} não encontrada no plano para item {p['item']}"
+            )
 
         escrever_linha(
-            ws, linha,
+            ws,
+            linha,
             p["data_pagamento"],
             conta_despesa,
             conta_caixa,
             p["valor"],
             historico_pagamento(p),
-            saldo
+            saldo,
         )
         linha += 1
 
@@ -564,8 +646,8 @@ def gerar_planilha_importacao(
         ws.column_dimensions[col].width = width
 
     for r in range(2, linha):
-        ws.cell(r, 4).number_format = '#,##0.00'
-        ws.cell(r, 6).number_format = '#,##0.00'
+        ws.cell(r, 4).number_format = "#,##0.00"
+        ws.cell(r, 6).number_format = "#,##0.00"
 
     wb.save(caminho_saida_xlsx)
 
@@ -577,7 +659,8 @@ def gerar_planilha_importacao(
         "rendimento": sintese["rendimento_aplicacao"],
         "avisos": avisos,
     }
-    
+
+
 def gerar_planilha_manual_pdde(
     caminho_plano_pdf,
     caminho_modelo_xlsx,
@@ -585,14 +668,16 @@ def gerar_planilha_manual_pdde(
     conta_caixa,
     conta_receita_pdde,
     saldo_inicial,
-    lancamentos
+    lancamentos,
 ):
     plano = extrair_plano_contas(caminho_plano_pdf)
 
     conta_receita_pdde = str(conta_receita_pdde).strip()
 
     if not validar_conta_por_tipo(conta_receita_pdde, "receita", plano):
-        return {"400": f"A conta de receita informada ({conta_receita_pdde}) não pertence ao grupo 4 - Receitas."}
+        return {
+            "400": f"A conta de receita informada ({conta_receita_pdde}) não pertence ao grupo 4 - Receitas."
+        }
 
     if caminho_modelo_xlsx and os.path.exists(caminho_modelo_xlsx):
         wb = load_workbook(caminho_modelo_xlsx)
@@ -609,16 +694,7 @@ def gerar_planilha_manual_pdde(
     saldo = saldo_inicial
     linha = 2
 
-    escrever_linha(
-        ws,
-        linha,
-        "",
-        "",
-        "",
-        "",
-        "SALDO INICIAL",
-        saldo
-    )
+    escrever_linha(ws, linha, "", "", "", "", "SALDO INICIAL", saldo)
 
     linha += 1
 
@@ -628,11 +704,7 @@ def gerar_planilha_manual_pdde(
     for l in receitas:
         saldo += l["valor"]
 
-        conta_receita = classificar_conta_receita(
-            l,
-            plano,
-            conta_receita_pdde
-        )
+        conta_receita = classificar_conta_receita(l, plano, conta_receita_pdde)
 
         data = datetime.strptime(l["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
 
@@ -644,7 +716,7 @@ def gerar_planilha_manual_pdde(
             conta_receita,
             l["valor"],
             l["historico"],
-            saldo
+            saldo,
         )
 
         linha += 1
@@ -655,13 +727,10 @@ def gerar_planilha_manual_pdde(
         pagamento_fake = {
             "fornecedor": l["historico"],
             "material": l["descricao"],
-            "natureza": ""
+            "natureza": "",
         }
 
-        conta_despesa = classificar_conta_despesa(
-            pagamento_fake,
-            plano
-        )
+        conta_despesa = classificar_conta_despesa(pagamento_fake, plano)
 
         data = datetime.strptime(l["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
 
@@ -673,7 +742,7 @@ def gerar_planilha_manual_pdde(
             conta_caixa,
             l["valor"],
             l["historico"],
-            saldo
+            saldo,
         )
 
         linha += 1
@@ -689,8 +758,8 @@ def gerar_planilha_manual_pdde(
         ws.column_dimensions[col].width = width
 
     for r in range(2, linha):
-        ws.cell(r, 4).number_format = '#,##0.00'
-        ws.cell(r, 6).number_format = '#,##0.00'
+        ws.cell(r, 4).number_format = "#,##0.00"
+        ws.cell(r, 6).number_format = "#,##0.00"
 
     wb.save(caminho_saida_xlsx)
 
