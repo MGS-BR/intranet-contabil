@@ -8,11 +8,9 @@ import shutil
 import sys
 import socket
 import uuid
-import requests
 import ocrmypdf
 import threading
 import pandas as pd
-from bs4 import BeautifulSoup
 from waitress import serve
 from urllib.parse import quote
 from pdde_importador import gerar_planilha_importacao, gerar_planilha_manual_pdde
@@ -331,7 +329,7 @@ def inicio():
             ):
                 total_procedimentos += 1
     except:
-        pass
+        print("Erro ao listar os procedimentos")
 
     try:
         if os.path.exists(LOG_BACKUP):
@@ -339,7 +337,7 @@ def inicio():
                 os.path.getmtime(LOG_BACKUP)
             ).strftime("%d/%m/%Y %H:%M")
     except:
-        pass
+        print("Erro ao verificar os backups")
 
     boot = datetime.fromtimestamp(psutil.boot_time())
     tempo_ligado = datetime.now() - boot
@@ -1377,7 +1375,7 @@ def pdde_pdf():
             conta_receita_pdde=conta_receita,
         )
         if "400" in gerador:
-            flash(f"{gerador["400"]}", "erro")
+            flash(f"{gerador['400']}", "erro")
             return redirect("/pdde")
 
         df = pd.read_excel(caminho_saida, header=None, skiprows=2)

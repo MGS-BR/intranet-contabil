@@ -698,15 +698,15 @@ def gerar_planilha_manual_pdde(
 
     linha += 1
 
-    receitas = [l for l in lancamentos if l["tipo"] == "receita"]
-    despesas = [l for l in lancamentos if l["tipo"] == "despesa"]
+    receitas = [lancamento for lancamento in lancamentos if lancamento["tipo"] == "receita"]
+    despesas = [lancamento for lancamento in lancamentos if lancamento["tipo"] == "despesa"]
 
-    for l in receitas:
-        saldo += l["valor"]
+    for lancamento in receitas:
+        saldo += lancamento["valor"]
 
-        conta_receita = classificar_conta_receita(l, plano, conta_receita_pdde)
+        conta_receita = classificar_conta_receita(lancamento, plano, conta_receita_pdde)
 
-        data = datetime.strptime(l["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
+        data = datetime.strptime(lancamento["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
 
         escrever_linha(
             ws,
@@ -714,25 +714,25 @@ def gerar_planilha_manual_pdde(
             data,
             conta_caixa,
             conta_receita,
-            l["valor"],
-            l["historico"],
+            lancamento["valor"],
+            lancamento["historico"],
             saldo,
         )
 
         linha += 1
 
-    for l in despesas:
-        saldo -= l["valor"]
+    for lancamento in despesas:
+        saldo -= lancamento["valor"]
 
         pagamento_fake = {
-            "fornecedor": l["historico"],
-            "material": l["descricao"],
+            "fornecedor": lancamento["historico"],
+            "material": lancamento["descricao"],
             "natureza": "",
         }
 
         conta_despesa = classificar_conta_despesa(pagamento_fake, plano)
 
-        data = datetime.strptime(l["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
+        data = datetime.strptime(lancamento["data"], "%Y-%m-%d").strftime("%d/%m/%Y")
 
         escrever_linha(
             ws,
@@ -740,8 +740,8 @@ def gerar_planilha_manual_pdde(
             data,
             conta_despesa,
             conta_caixa,
-            l["valor"],
-            l["historico"],
+            lancamento["valor"],
+            lancamento["historico"],
             saldo,
         )
 
