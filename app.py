@@ -328,16 +328,16 @@ def inicio():
                 "~$"
             ):
                 total_procedimentos += 1
-    except:
-        print("Erro ao listar os procedimentos")
+    except Exception as e:
+        print(f"Erro ao listar os procedimentos: {e}")
 
     try:
         if os.path.exists(LOG_BACKUP):
             ultimo_backup = datetime.fromtimestamp(
                 os.path.getmtime(LOG_BACKUP)
             ).strftime("%d/%m/%Y %H:%M")
-    except:
-        print("Erro ao verificar os backups")
+    except Exception as e:
+        print(f"Erro ao verificar os backups: {e}")
 
     boot = datetime.fromtimestamp(psutil.boot_time())
     tempo_ligado = datetime.now() - boot
@@ -1543,7 +1543,7 @@ def esocial():
             WHERE codigo LIKE ?
             OR descriminador LIKE ?
             ORDER BY codigo
-        
+
         """,
             (f"%{busca}%", f"%{busca}%"),
         )
