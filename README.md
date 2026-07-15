@@ -1,5 +1,10 @@
 # Intranet Contábil
 
+![Python](https://img.shields.io/badge/Python-3.14-blue)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Python CI](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml/badge.svg)](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml)
+
 Sistema interno (intranet) desenvolvido em **Flask** para escritórios de contabilidade. Centraliza em um único painel web o acesso a arquivos de clientes, procedimentos internos, cadastro de empresas, controle de horas extras, backup, monitoramento do servidor, geração de PDDE e OCR de PDFs, entre outras rotinas do dia a dia do escritório.
 
 > ⚠️ Este sistema foi projetado para rodar em um **servidor Windows local** (geralmente o próprio servidor de arquivos do escritório), pois algumas funcionalidades (reinício do servidor, backup via Robocopy, monitoramento de disco `C:\`, `D:\`, `E:\`) dependem do ambiente Windows.
