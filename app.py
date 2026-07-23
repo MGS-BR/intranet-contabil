@@ -1796,7 +1796,7 @@ def excluir_hora_extra(id):
         conn.commit()
         conn.close()
 
-        flash(f"Hora extra excluida com sucesso.", "success")
+        flash("Hora extra excluida com sucesso.", "success")
         return redirect(f"/rh/horas-extras/funcionario/{funcionario_id}?mes={mes}")
 
     conn.close()
