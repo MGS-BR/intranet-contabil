@@ -1,17 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}
-Certificados
-{% endblock %}
+{% block title %}Certificados Digitais{% endblock %}
 
-{% block conteudo %}
+{% block content %}
 
-<body>
-<h1>Certificados da Máquina</h1>
+<h1 class="titulo-index">Certificados</h1>
 
 <hr>
 
-<table border="1" cellpadding="8">
+<div class="tabela-wrapper"><table border="1" cellpadding="8">
     <tr>
         <th>Empresa</th>
         <th>CNPJ</th>
@@ -28,6 +25,6 @@ Certificados
         <td>{{ cert.status }}</td>
     </tr>
     {% endfor %}
-</table>
-</body>
+</table></div>
+
 {% endblock %}

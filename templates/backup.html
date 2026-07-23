@@ -1,23 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}
-Central de Backup
-{% endblock %}
+{% block title %}Central de Backup{% endblock %}
 
-{% block conteudo %}
+{% block content %}
 
-<body>
-<h1>Central de Backup</h1>
-
-<hr>
-<form method="post" action="/backup/executar">
-    <button type="submit">Executar Backup</button>
-</form>
+<h1 class="titulo-index">Central de Backup</h1>
 
 <hr>
 
-<h2>Log do Backup</h2>
-<a href="/backup/vizualizar-log">Baixar arquivo de Log</a>
-<pre>{{ log }}</pre>
-</body>
+<div class="panel">
+	<h2>Status atual</h2>
+
+	<div class="health-grid" id="statusGrid">
+		<div class="health-card">
+			<span class="label">Último backup</span>
+			<div class="value" id="ultimoBackupValor">
+				{{ ultimo_backup_formatado or "sem registro" }}
+			</div>
+		</div>
+
+		<div class="health-card">
+			<span class="label">Status</span>
+			<div class="value" id="statusValor">
+				{{ "Executando..." if rodando else "Ocioso" }}
+			</div>
+		</div>
+	</div>
+
+	<div class="manual-acoes" style="margin-top: 20px;">
+		<button id="btn-executar-backup" {{ "disabled" if rodando else "" }}>
+			{{ "Backup em execução..." if rodando else "Executar backup agora" }}
+		</button>
+	</div>
+
+	<div id="erro-backup" class="erro" style="display:none; margin-top: 14px;"></div>
+</div>
+
+<div class="panel">
+	<div class="log-header">
+		<h2>Log do backup</h2>
+		<a href="/servidor/backup/log/download" class="btn-download-log">⬇ Baixar log completo</a>
+	</div>
+	<pre id="logBackup" class="log-box">{{ log_conteudo }}</pre>
+</div>
+
+<script src="{{ url_for('static', filename='backup.js') }}"></script>
 {% endblock %}

@@ -1,6 +1,8 @@
 import sqlite3
+from pathlib import Path
 
-BANCO = "banco.db"
+BASE_DIR = Path(__file__).resolve().parent
+BANCO = str(BASE_DIR / "banco.db")
 
 
 def conectar():
@@ -17,31 +19,6 @@ def adicionar_coluna(cursor, tabela, coluna, tipo):
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS indice_arquivos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT,
-            caminho TEXT,
-            pasta TEXT,
-            extensao TEXT,
-            tamanho INTEGER,
-            modificado_em TEXT
-        )
-    """)
-    for coluna, tipo in {
-        "extensao": "TEXT",
-        "tamanho": "INTEGER",
-        "modificado_em": "TEXT",
-    }.items():
-        adicionar_coluna(cursor, "indice_arquivos", coluna, tipo)
-
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_indice_nome ON indice_arquivos(nome)"
-    )
-    cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_indice_caminho ON indice_arquivos(caminho)"
-    )
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS empresas (
@@ -122,9 +99,12 @@ def criar_tabelas():
     )
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS funcionarios_horas (
+        CREATE TABLE IF NOT EXISTS funcionarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL UNIQUE
+            nome TEXT NOT NULL UNIQUE,
+            ativo BOOLEAN DEFAULT TRUE,
+            funcao TEXT,
+            descricao TEXT
         )
     """)
 
@@ -137,23 +117,8 @@ def criar_tabelas():
             hora_fim TEXT NOT NULL,
             total_horas REAL NOT NULL,
             observacao TEXT,
-            FOREIGN KEY (funcionario_id) REFERENCES funcionarios_horas(id)
+            FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
         )
-    """)
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS eventos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT NOT NULL,
-        descricao TEXT,
-        inicio TEXT,
-        fim TEXT,
-        recorrencia TEXT,
-        intervalo INTEGER DEFAULT 1,
-        dia_recorrencia INTEGER,
-        mes_recorrencia INTEGER,
-        cor TEXT
-    )
     """)
 
     cursor.execute("""
@@ -166,12 +131,15 @@ def criar_tabelas():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS organizadora (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        regra TEXT,
-        pasta TEXT
-        data BOOLEAN DEFAULT TRUE
-    )
+        CREATE TABLE IF NOT EXISTS eventos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            data TEXT NOT NULL,
+            cor TEXT DEFAULT '#2f5d8a',
+            recorrencia TEXT NOT NULL DEFAULT 'nenhuma',
+            criado_em TEXT
+        )
     """)
 
     conn.commit()
@@ -208,10 +176,6 @@ def ver_conteudo():
 
 
 def apagar_tabelas():
-    confirmar = input("Tem certeza que deseja apagar TODAS as tabelas? Digite SIM: ")
-    if confirmar != "SIM":
-        print("Operação cancelada.")
-        return
 
     conn = conectar()
     cursor = conn.cursor()
@@ -236,6 +200,7 @@ def menu():
 
     if escolha == "1":
         apagar_tabelas()
+        criar_tabelas()
     elif escolha == "2":
         criar_tabelas()
     elif escolha == "3":

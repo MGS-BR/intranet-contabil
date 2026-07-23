@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Pendências{% endblock %}
+
+{% block content %}
+<h1 class="titulo-index">Pendências das empresas</h1>
+<hr>
+
+<form class="horizontal" method="GET">
+    <input type="month" name="mes" value="{{ mes }}">
+    <input type="text" name="busca" placeholder="Pesquisar por código e nome das empresas..." value="{{ busca }}">
+    <button type="submit">Filtrar</button>
+</form>
+
+<div class="tabela-wrapper"><table border="1" cellpadding="8">
+    <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>DCTFWEB</th>
+        <th>FGTS</th>
+        <th>DAS-MENSAL</th>
+    </tr>
+    {% for codigo, empresa in empresas.items() %}
+    <tr>
+        <td>{{ empresa.codigo or '-' }}</td>
+        <td>{{ empresa.nome or '-' }}</td>
+
+        <td>
+            {% if empresa.dctfweb %}
+                <a href="{{ url_for('abrir_guia', codigo=empresa.codigo, tipo='dctfweb', mes=mes) }}" target="_blank">✅</a>
+            {% else %}
+                ❌
+            {% endif %}
+        </td>
+
+        <td>
+            {% if empresa.fgts %}
+                <a href="{{ url_for('abrir_guia', codigo=empresa.codigo, tipo='fgts', mes=mes) }}" target="_blank">✅</a>
+            {% else %}
+                ❌
+            {% endif %}
+        </td>
+
+        <td>
+            {% if empresa.das_mensal %}
+                <a href="{{ url_for('abrir_guia', codigo=empresa.codigo, tipo='das_mensal', mes=mes) }}" target="_blank">✅</a>
+            {% else %}
+                ❌
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table></div>
+
+{% if not empresas %}
+    <p>Nenhuma empresa encontrada.</p>
+{% endif %}
+{% endblock %}

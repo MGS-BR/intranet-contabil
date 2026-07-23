@@ -1,60 +1,48 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horas {{ funcionario.nome }}</title>
-	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-<h1>Horas Extras - {{ funcionario.nome }}</h1>
+{% extends "base.html" %}
 
-<div class="links-rapidos">
-<a href="/horas-extras">Voltar</a>
-</div>
+{% block title %}Horas extras {{ funcionario.nome }}{% endblock %}
+
+{% block content %}
+
+<h2>Horas {{ funcionario.nome }}</h2>
 
 <hr>
 
-<form method="GET">
-    <label>Mês:</label>
-	<br>
-    <input type="month" name="mes" value="{{ mes }}">
-    <button>Filtrar</button>
-</form>
-<hr>
+<h3>Cadastrar Hora Extra</h3>
 
-<h2>Cadastrar Hora Extra</h2>
-
-<form method="POST" action="/horas-extras/cadastrar/{{ funcionario.id }}">
-    <p>
-        Data:<br>
+<form class="horizontal" method="POST" action="/rh/horas-extras/cadastrar/{{ funcionario.id }}">
+    <div class="form-group">
+        <label>Data</label>
         <input type="date" name="data" required>
-    </p>
-
-    <p>
-        Início:<br>
+    </div>
+    <div class="form-group">
+        <label>Início</label>
         <input type="time" name="hora_inicio" required>
-    </p>
-
-    <p>
-        Fim:<br>
+    </div>
+    <div class="form-group">
+        <label>Fim</label>
         <input type="time" name="hora_fim" required>
-    </p>
-
-    <p>
-        Observação:<br>
+    </div>
+    <div class="form-group">
+        <label>Observação</label>
         <input type="text" name="observacao">
-    </p>
-
+    </div>
     <button type="submit">Cadastrar Hora Extra</button>
 </form>
 
 <hr>
 
-<h2>Total do mês: {{ "%.2f"|format(total_mes) }} horas</h2>
+<form class="horizontal" method="GET">
+    <input type="month" name="mes" value="{{ mes }}">
 
-<table>
+    <button type="submit">Filtrar</button>
+</form>
+
+<h3>Total do mês: {{ "%.2f"|format(total_mes) }} horas</h3>
+
+<br>
+
+<div class="tabela-wrapper"><table border="1" cellpadding="8">
     <tr>
         <th>Data</th>
         <th>Início</th>
@@ -66,7 +54,7 @@
 
     {% for r in registros %}
     <tr>
-        <td>{{ r.data }}</td>
+        <td>{{ r.data | data_br }}</td>
         <td>{{ r.hora_inicio }}</td>
         <td>{{ r.hora_fim }}</td>
         <td>{{ r.total_horas }}</td>
@@ -74,7 +62,7 @@
 		<td>
 			<form
 				method="POST"
-				action="/horas-extras/excluir/{{ r.id }}"
+				action="/rh/horas-extras/excluir/{{ r.id }}"
 				onsubmit="return confirm('Deseja realmente excluir esta hora extra?');"
 			>
 				<button
@@ -94,6 +82,6 @@
 		</td>
     </tr>
     {% endfor %}
-</table>
-</body>
-</html>
+</table></div>
+
+{% endblock %}

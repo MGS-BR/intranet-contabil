@@ -1,322 +1,491 @@
 {% extends "base.html" %}
 
-{% block conteudo %}
+{% block title %}{{ nome_escritorio or "Escritório" }} Intranet{% endblock %}
 
-<h1>Sistema Interno</h1>
+{% block content %}
+
+<h1 class="titulo-index">Bem-vindo à Intranet.</h1>
 
 <hr>
 
-<h2>Links rápidos</h2>
+<div class="panel">
+	<h2>Acesso rápido</h2>
+	<div class="quick-grid" id="quickGrid"></div>
+</div>
 
-<div class="links-rapidos">
+<div class="panel">
+	<h2>Acesso do escritório</h2>
+	<div class="office-grid" id="officeGrid"></div>
+</div>
 
-    <a href="https://www.contabeis.com.br/" target="_blank">Portal Contábeis</a>
-    <a href="https://cav.receita.fazenda.gov.br/autenticacao/login" target="_blank">Ecac</a>
-    <a href="https://www.gov.br/esocial/pt-br" target="_blank">eSocial</a>
-    <a href="https://www.gov.br/empresas-e-negocios/pt-br/redesim" target="_blank">Redesim</a>
-
+<div class="panel">
+  <h2>Saúde do servidor</h2>
+  <div class="health-grid" id="healthGrid"></div>
 </div>
 
 <hr>
 
-<h2>Resumo</h2>
-
-<p>📚 Procedimentos: {{ total_procedimentos }}</p>
-<p>⏳ Tempo ligado: {{ dias }} dias, {{ horas }} horas e {{minutos}} minutos</p>
-<p>💾 Último backup: {{ ultimo_backup }}</p>
-
-<hr>
-
-<div id="calendar-container">
-
-	<h2>Calendário</h2>
-
-    <div id="calendar"></div>
-
+<div class="panel">
+	<div class="calendario-topo">
+		<div class="calendario-nav">
+			<button type="button" id="calMesAnterior" class="btn-cal-nav">‹</button>
+			<h2 id="calTituloMes"></h2>
+			<button type="button" id="calMesProximo" class="btn-cal-nav">›</button>
+		</div>
+		<button type="button" id="btnNovoEvento" class="btn-novo-evento">+ Novo evento</button>
+	</div>
+	<div class="calendario-dias-semana">
+		<span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+	</div>
+	<div class="calendario-grid" id="calendarioGrid"></div>
 </div>
 
-{% endblock %}
-
-{% block modal %}
-
-<div id="eventoModal">
-
-    <div id="caixa-evento">
-
-        <div class="modal-header">
-
-            <h5>Evento</h5>
-            <button id="fecharModal">X</button>
-        </div>
-        <div class="modal-body">
-
-            <input type="hidden" id="evento_id">
-            <label>Título</label>
-            <input class="form-control mb-3" id="titulo">
-			<label>Cor do evento</label>
-			<div id="paleta-cores">
-				<div class="cores-predefinidas">
-					<div class="cor" data-cor="#3788D8" style="background:#3788D8"></div>
-					<div class="cor" data-cor="#37D774" style="background:#37D774"></div>
-					<div class="cor" data-cor="#D7BD37" style="background:#D7BD37"></div>
-					<div class="cor" data-cor="#D737BA" style="background:#D737BA"></div>
-					<div class="cor" data-cor="#D73737" style="background:#D73737"></div>
-				</div>
-				<label for="seletorCor" id="botaoCor">
-					🎨 Escolher outra cor
-					<input type="color" id="seletorCor" value="#3788d8">
-				</label>
+<div class="trello-overlay" id="eventoOverlay">
+	<div class="trello-modal evento-modal">
+		<div class="trello-modal-topo">
+			<button type="button" class="trello-fechar" id="eventoFechar">✕</button>
+		</div>
+		<form id="formEvento" class="evento-form form-async">
+			<input type="hidden" id="eventoId">
+			<div class="form-group">
+				<label for="eventoNome">Nome do evento</label>
+				<input type="text" id="eventoNome" required maxlength="120">
 			</div>
-			<input type="hidden" id="cor" value="#3788D8">
-            <label>Descrição</label>
-            <textarea class="form-control mb-3" id="descricao"></textarea>
-
-            <label>Recorrência</label>
-
-            <select class="form-control mb-3" id="recorrencia">
-
-                <option value="">Não repetir</option>
-                <option value="mensal">Todo mês</option>
-                <option value="anual">Todo ano</option>
-
-            </select>
-
-            <div id="campo_intervalo">
-                <label>A cada quantos meses?</label>
-                <input type="number" value="1" min="1" class="form-control" id="intervalo">
-            </div>
-
-            <div id="campo_mes">
-                <label>Mês do ano</label>
-                <input type="number" min="1" max="12" class="form-control" id="mes">
-            </div>
-
-        </div>
-        <div class="modal-footer">
-
-            <button class="btn btn-danger" id="btnExcluir">Excluir</button>
-            <button class="btn btn-primary" id="btnSalvar">Salvar</button>
-        </div>
-    </div>
+			<div class="form-group">
+				<label for="eventoDescricao">Descrição</label>
+				<textarea id="eventoDescricao" maxlength="500"></textarea>
+			</div>
+			<div class="form-group">
+				<label for="eventoData">Data</label>
+				<input type="date" id="eventoData" required>
+			</div>
+			<div class="form-group">
+				<label>Cor</label>
+				<div class="evento-cores" id="eventoCores">
+					<button type="button" class="cor-swatch" data-cor="#2f5d8a" style="background:#2f5d8a" title="Azul"></button>
+					<button type="button" class="cor-swatch" data-cor="#3c8a5a" style="background:#3c8a5a" title="Verde"></button>
+					<button type="button" class="cor-swatch" data-cor="#b8860b" style="background:#b8860b" title="Âmbar"></button>
+					<button type="button" class="cor-swatch" data-cor="#b8433a" style="background:#b8433a" title="Vermelho"></button>
+					<button type="button" class="cor-swatch" data-cor="#8e5cd9" style="background:#8e5cd9" title="Roxo"></button>
+					<button type="button" class="cor-swatch" data-cor="#d9558e" style="background:#d9558e" title="Rosa"></button>
+					<input type="color" id="eventoCor" value="#2f5d8a" title="Cor personalizada">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="eventoRecorrencia">Recorrência</label>
+				<select id="eventoRecorrencia">
+					<option value="nenhuma">Não repetir</option>
+					<option value="mensal">Mensal</option>
+					<option value="bimestral">Bimestral (a cada 2 meses)</option>
+					<option value="trimestral">Trimestral (a cada 3 meses)</option>
+					<option value="semestral">Semestral (a cada 6 meses)</option>
+					<option value="anual">Anual</option>
+				</select>
+			</div>
+			<div class="evento-form-acoes">
+				<button type="button" id="btnExcluirEvento" class="btn-excluir-evento" style="display:none;">Excluir</button>
+				<button type="submit" class="btn-salvar-evento">Salvar</button>
+			</div>
+			<div class="evento-status" id="eventoStatus"></div>
+		</form>
+	</div>
 </div>
-
-
-{% endblock %}
-
-{% block script %}
 
 <script>
+	/* ACESSO RÁPIDO */
+	const quickLinks = [
+		{ label:'Receita Federal', url:'https://www.gov.br/receitafederal', ico:'🏛' },
+		{ label:'e-CAC', url:'https://cav.receita.fazenda.gov.br', ico:'🔐' },
+		{ label:'Simples Nacional', url:'https://www8.receita.fazenda.gov.br/simplesnacional', ico:'📄' },
+		{ label:'Conectividade Social', url:'https://conectividade.caixa.gov.br', ico:'☁' },
+		{ label:'SPED', url:'https://sped.rfb.gov.br', ico:'📁' },
+		{ label:'Diário Oficial (DOU)', url:'https://www.in.gov.br', ico:'📰' },
+	];
+	const quickGrid = document.getElementById('quickGrid');
+	quickLinks.forEach(item=>{
+		const a = document.createElement('a');
+		a.className = 'quick-card';
+		a.href = item.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+		a.innerHTML = `<span class="ico">${item.ico}</span><span class="label">${item.label}</span>`;
+		quickGrid.appendChild(a);
+	});
+  
+	/* ACESSO DO ESCRITÓRIO */
+	const officeLinks = [
+		{ label:'Forms Fillout', url:'https://build.fillout.com/home', ico:'📋' },
+		{ label:'Forms Google', url:'https://docs.google.com/forms/u/0/', ico:'📋' },
+		{ label:'Jettax', url:'https://admin.jettax360.com.br/', ico:'💰' },
+		{ label:'Ottimizza', url:'https://portal.ottimizza.com.br/', ico:'📊' },
+		{ label:'Trello', url:'https://trello.com/b/YnEBPgM3/conntador-contabilidade', ico:'📝' },
+		{ label:'Wix', url:'https://manage.wix.com/dashboard/7040d0b5-93cf-4015-8d63-a694178dee04/home?referralInfo=my-sites', ico:'💻' },
+	];
+	const officeGrid = document.getElementById('officeGrid');
+	officeLinks.forEach(item=>{
+		const a = document.createElement('a');
+		a.className = 'office-card';
+		a.href = item.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+		a.innerHTML = `<span class="ico">${item.ico}</span><span class="label">${item.label}</span>`;
+		officeGrid.appendChild(a);
+	});
+	
+	/* SAÚDE DO SERVIDOR */
+	const HEALTH_API_URL = '/api/health';
+	const HEALTH_POLL_MS = 5000; // a cada quantos ms buscar dados novos da API
+ 
+	const healthGrid = document.getElementById('healthGrid');
+	const metrics = { cpu:42, mem:61, disk:74 };
 
-let calendario;
-
-let eventoSelecionado = null;
-
-let dataSelecionada = null;
-
-let modal = document.getElementById("eventoModal");
-
-document.addEventListener(
-"DOMContentLoaded",
-function(){
-
-calendario = new FullCalendar.Calendar(
-
-document.getElementById("calendar"),
-
-{
-locale:"pt-br",
-height:"auto",
-initialView:"dayGridMonth",
-events:"/api/eventos",
-
-buttonText: {
-	today: "Hoje",
-	month: "Mês",
-	week: "Semana",
-	day: "Dia"
-},
-
-dateClick:function(info){
-
-    abrirModal(null, info.date);
-
-},
-
-eventClick:function(info){
-
-    abrirModal(
-        info.event,
-        info.event.start
-    );
-
-}
-
-});
-calendario.render();
-setTimeout(() => {
-	calendario.updateSize()
-}, 100);
-
-document.querySelectorAll(".cor").forEach(cor => {
-
-	cor.onclick=function(){
-		let valor = this.dataset.cor;
-		
-		document.getElementById("cor").value = valor;
-		document.getElementById("seletorCor").value = valor;
-		
-		document.querySelectorAll(".cor").forEach(c => c.classList.remove("selecionada"));
-		
-		thi.classList.add("selecionada");
+	function barColor(pct){
+		if(pct >= 85) return 'var(--red)';
+		if(pct >= 70) return 'var(--amber)';
+		return 'var(--green)';
 	}
-	
-});
 
-document.getElementById("seletorCor").oninput=function(){
+	healthGrid.innerHTML = `
+	<div class="health-card">
+	  <span class="label">CPU</span>
+	  <div class="value" id="cpuVal">${metrics.cpu}%</div>
+	  <div class="bar-track"><div class="bar-fill" id="cpuBar" style="width:${metrics.cpu}%;background:${barColor(metrics.cpu)}"></div></div>
+	</div>
+	<div class="health-card">
+	  <span class="label">Memória</span>
+	  <div class="value" id="memVal">${metrics.mem}%</div>
+	  <div class="bar-track"><div class="bar-fill" id="memBar" style="width:${metrics.mem}%;background:${barColor(metrics.mem)}"></div></div>
+	</div>
+	<div class="health-card">
+	  <span class="label">Armazenamento</span>
+	  <div class="value" id="diskVal">${metrics.disk}%</div>
+	  <div class="bar-track"><div class="bar-fill" id="diskBar" style="width:${metrics.disk}%;background:${barColor(metrics.disk)}"></div></div>
+	  <span class="sub">324 GB de 500 GB</span>
+	</div>
+	<div class="health-card">
+	  <span class="label">Tempo ligado</span>
+	  <div class="value" id="uptimeValue">—</div>
+	</div>
+	<div class="health-card">
+	  <span class="label">Último backup</span>
+	  <div class="value" id="backupValue">—</div>
+	  <span class="sub" id="backupSub"></span>
+	</div>
+	`;
 
-	let valor = this.value;
-	
-	document.getElementById("cor").value = valor;
-	
-	document.querySelectorAll(".cor").forEach(c => c.classList.remove("selecionada"));
+	function updateBar(key, pct){
+		pct = Math.max(5, Math.min(97, Math.round(pct)));
+		document.getElementById(key+'Val').textContent = pct+'%';
+		const bar = document.getElementById(key+'Bar');
+		bar.style.width = pct+'%';
+		bar.style.background = barColor(pct);
+		return pct;
+	}
 
-};
+	function formatUptime(totalSeconds){
+		const d = Math.floor(totalSeconds/86400);
+		const h = Math.floor((totalSeconds%86400)/3600);
+		const m = Math.floor((totalSeconds%3600)/60);
+		return `${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+	}
 
-});
+	function renderBackupFromTimestamp(unixSeconds, nomeArquivo){
+		if(!unixSeconds){
+			document.getElementById('backupValue').textContent = 'sem registro';
+			document.getElementById('backupSub').textContent = '';
+			return;
+		}
+		const backupDate = new Date(unixSeconds * 1000);
+		const diffH = Math.round((Date.now() - backupDate.getTime())/3600000);
+		document.getElementById('backupValue').textContent = backupDate.toLocaleDateString('pt-BR') + ' ' + backupDate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+		document.getElementById('backupSub').textContent = (diffH <= 0 ? 'agora mesmo' : `há ${diffH}h`) + (nomeArquivo ? ` · ${nomeArquivo}` : '');
+	}
 
-function abrirModal(evento,data){
-eventoSelecionado = evento;
-dataSelecionada = data;
+	async function fetchRealHealth(){
+		try{
+		  const res = await fetch(HEALTH_API_URL, { cache: 'no-store' });
+		  if(!res.ok) throw new Error('Resposta HTTP ' + res.status);
+		  const data = await res.json();
 
-document.getElementById("evento_id").value =
-evento ? evento.id : "";
+		  updateBar('cpu', data.cpu_percent);
+		  updateBar('mem', data.mem_percent);
+		  updateBar('disk', data.disco_percent);
+		  document.querySelector('#healthGrid .health-card:nth-child(3) .sub').textContent =
+			`${data.disco_usado_gb} GB de ${data.disco_total_gb} GB`;
 
-document.getElementById("titulo").value =
-evento ? evento.title : "";
+		  document.getElementById('uptimeValue').textContent = formatUptime(data.uptime_segundos);
+		  renderBackupFromTimestamp(data.ultimo_backup_timestamp, data.ultimo_backup_arquivo);
+		}catch(err){
+		  console.error('Falha ao buscar dados reais do servidor, usando simulação:', err);
+		  runSimulatedHealth();
+		}
+	}
 
-document.getElementById("cor").value =
-evento?.backgroundColor || "#3788d8";
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-document.getElementById("seletorCor").value =
-evento?.backgroundColor || "#3788d8";
+	function runSimulatedHealth(){
+		metrics.cpu = Math.max(20, Math.min(90, metrics.cpu + (Math.random()*14-7)));
+		metrics.mem = Math.max(40, Math.min(88, metrics.mem + (Math.random()*6-3)));
+		metrics.disk = Math.max(60, Math.min(90, metrics.disk + (Math.random()*2-1)));
+		updateBar('cpu', metrics.cpu);
+		updateBar('mem', metrics.mem);
+		updateBar('disk', metrics.disk);
+	}
 
-document.getElementById("descricao").value =
-evento ? evento.extendedProps.description : "";
+	const bootTime = Date.now() - ((14*24*60*60) + (6*60*60) + (32*60)) * 1000;
+	function renderSimulatedUptime(){
+		document.getElementById('uptimeValue').textContent = formatUptime(Math.floor((Date.now() - bootTime)/1000));
+	}
+	function renderSimulatedBackup(){
+		const backupTime = new Date();
+		backupTime.setHours(3,0,0,0);
+		if(backupTime.getTime() > Date.now()) backupTime.setDate(backupTime.getDate()-1);
+		renderBackupFromTimestamp(backupTime.getTime()/1000, null);
+	}
 
-document.getElementById("recorrencia").value = "";
+	if(HEALTH_API_URL){
+		// modo real: busca a API a cada HEALTH_POLL_MS
+		fetchRealHealth();
+		setInterval(fetchRealHealth, HEALTH_POLL_MS);
+	} else {
+		// modo simulado (padrão, sem backend configurado)
+		renderSimulatedUptime();
+		renderSimulatedBackup();
+		if(!reduceMotion){ setInterval(runSimulatedHealth, 4000); }
+		setInterval(renderSimulatedUptime, 30000);
+		setInterval(renderSimulatedBackup, 60000);
+	}
 
-document.getElementById("intervalo").value = 1;
+	/* CALENDÁRIO DE EVENTOS */
+	(function(){
+		const grid = document.getElementById('calendarioGrid');
+		const titulo = document.getElementById('calTituloMes');
+		const btnAnterior = document.getElementById('calMesAnterior');
+		const btnProximo = document.getElementById('calMesProximo');
+		const btnNovo = document.getElementById('btnNovoEvento');
 
-document.getElementById("mes").value =
-data.getMonth()+1;
+		const overlay = document.getElementById('eventoOverlay');
+		const btnFechar = document.getElementById('eventoFechar');
+		const form = document.getElementById('formEvento');
+		const campoId = document.getElementById('eventoId');
+		const campoNome = document.getElementById('eventoNome');
+		const campoDescricao = document.getElementById('eventoDescricao');
+		const campoData = document.getElementById('eventoData');
+		const campoCor = document.getElementById('eventoCor');
+		const campoRecorrencia = document.getElementById('eventoRecorrencia');
+		const btnExcluir = document.getElementById('btnExcluirEvento');
+		const statusEl = document.getElementById('eventoStatus');
+		
+		const eventoCoresSwatches = document.querySelectorAll('#eventoCores .cor-swatch');
 
-atualizarRecorrencia();
+		const nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-document.getElementById("btnExcluir").style.display =
-evento ? "block" : "none";
+		const hoje = new Date();
+		let anoAtual = hoje.getFullYear();
+		let mesAtual = hoje.getMonth() + 1;
 
-modal.style.display = "block";
+		function abrirModal(dadosEvento){
+			statusEl.textContent = '';
+			statusEl.className = 'evento-status';
 
+			if(dadosEvento){
+				campoId.value = dadosEvento.id;
+				campoNome.value = dadosEvento.nome;
+				campoDescricao.value = dadosEvento.descricao || '';
+				campoData.value = dadosEvento.data_original;
+				campoCor.value = dadosEvento.cor || '#2f5d8a';
+				campoRecorrencia.value = dadosEvento.recorrencia || 'nenhuma';
+				btnExcluir.style.display = 'inline-block';
+			} else {
+				form.reset();
+				campoId.value = '';
+				campoCor.value = '#2f5d8a';
+				campoData.value = `${anoAtual}-${String(mesAtual).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+				btnExcluir.style.display = 'none';
+			}
 
-}
+			atualizarSelecaoCor();
+			overlay.classList.add('aberto');
+		}
 
-function fecharModal(){
-    modal.style.display = "none";
-}
+		function fecharModal(){
+			overlay.classList.remove('aberto');
+		}
 
-document.getElementById("fecharModal")
-.onclick = fecharModal;
+		btnFechar.addEventListener('click', fecharModal);
+		overlay.addEventListener('click', (e)=>{ if(e.target === overlay) fecharModal(); });
+		btnNovo.addEventListener('click', ()=> abrirModal(null));
 
-function atualizarRecorrencia(){
-	let valor = document.getElementById("recorrencia").value;
-	
-	document.getElementById("campo_intervalo").style.display =
-	valor=="mensal" ? "block":"none";
+		async function carregarEventos(ano, mes){
+			try{
+				const res = await fetch(`/api/eventos?ano=${ano}&mes=${mes}`);
+				if(!res.ok) throw new Error('Falha ao buscar eventos');
+				const data = await res.json();
+				return data.eventos || [];
+			}catch(err){
+				console.error('Erro ao carregar eventos:', err);
+				return [];
+			}
+		}
 
-	document.getElementById("campo_mes").style.display =
-	valor=="anual" ? "block":"none";
-}
+		function corTextoContraste(hex){
+			if(!hex) return '#fff';
+			const c = hex.replace('#','');
+			if(c.length !== 6) return '#fff';
+			const r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+			const luminancia = (0.299*r + 0.587*g + 0.114*b) / 255;
+			return luminancia > 0.6 ? '#1f2733' : '#ffffff';
+		}
 
-document.getElementById("recorrencia")
-.onchange = atualizarRecorrencia;
+		function atualizarSelecaoCor(){
+			const corAtual = campoCor.value.toLowerCase();
+			eventoCoresSwatches.forEach(sw => {
+				sw.classList.toggle('selecionado', sw.dataset.cor.toLowerCase() === corAtual);
+			});
+		}
 
-document.getElementById("btnSalvar")
-.onclick=function(){
+		eventoCoresSwatches.forEach(sw => {
+			sw.addEventListener('click', ()=>{
+				campoCor.value = sw.dataset.cor;
+				atualizarSelecaoCor();
+			});
+		});
 
-let id =
-document.getElementById("evento_id").value;
+		campoCor.addEventListener('input', atualizarSelecaoCor);
 
-let dados={
+		async function renderizarCalendario(){
+			titulo.textContent = `${nomesMeses[mesAtual-1]} de ${anoAtual}`;
+			grid.innerHTML = '<div class="calendario-carregando">Carregando…</div>';
 
-titulo:
-document.getElementById("titulo").value,
+			const eventos = await carregarEventos(anoAtual, mesAtual);
+			const eventosPorDia = {};
+			eventos.forEach(ev => {
+				if(!eventosPorDia[ev.dia]) eventosPorDia[ev.dia] = [];
+				eventosPorDia[ev.dia].push(ev);
+			});
 
-cor:
-document.getElementById("cor").value,
+			const primeiroDiaSemana = new Date(anoAtual, mesAtual-1, 1).getDay();
+			const totalDias = new Date(anoAtual, mesAtual, 0).getDate();
+			const diaHojeMarcador = (anoAtual === hoje.getFullYear() && mesAtual === hoje.getMonth()+1) ? hoje.getDate() : null;
 
-descricao:
-document.getElementById("descricao").value,
+			grid.innerHTML = '';
 
-inicio:
-eventoSelecionado ?
-eventoSelecionado.startStr :
-dataSelecionada.toISOString().substring(0,10),
+			for(let i=0;i<primeiroDiaSemana;i++){
+				const vazio = document.createElement('div');
+				vazio.className = 'calendario-dia calendario-dia-vazio';
+				grid.appendChild(vazio);
+			}
 
-fim:null,
+			for(let dia=1; dia<=totalDias; dia++){
+				const celula = document.createElement('div');
+				celula.className = 'calendario-dia';
+				if(dia === diaHojeMarcador) celula.classList.add('calendario-dia-hoje');
 
-recorrencia:
-document.getElementById("recorrencia").value,
+				const numero = document.createElement('span');
+				numero.className = 'calendario-dia-numero';
+				numero.textContent = dia;
+				celula.appendChild(numero);
 
-intervalo:
-Number(
-document.getElementById("intervalo").value
-),
+				const listaEventosDia = document.createElement('div');
+				listaEventosDia.className = 'calendario-dia-eventos';
 
-dia:
-eventoSelecionado ?
-eventoSelecionado.start.getDate():
-dataSelecionada.getDate(),
+				(eventosPorDia[dia] || []).forEach(ev => {
+					const chip = document.createElement('div');
+					chip.className = 'calendario-evento-chip';
+					chip.style.background = ev.cor;
+					chip.style.color = corTextoContraste(ev.cor);
+					chip.textContent = ev.nome;
+					chip.title = ev.descricao ? `${ev.nome} — ${ev.descricao}` : ev.nome;
+					chip.addEventListener('click', (e)=>{
+						e.stopPropagation();
+						abrirModal(ev);
+					});
+					listaEventosDia.appendChild(chip);
+				});
 
-mes:
-Number(
-document.getElementById("mes").value
-)
+				celula.appendChild(listaEventosDia);
+				celula.addEventListener('click', ()=>{
+					abrirModal(null);
+					campoData.value = `${anoAtual}-${String(mesAtual).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+				});
 
-};
-fetch(
-id ?
-"/api/eventos/"+id :
-"/api/eventos",
-{
-method:id ? "PUT":"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(dados)
-})
-.then(()=>{
-fecharModal();
-calendario.refetchEvents();
-});
+				grid.appendChild(celula);
+			}
+		}
 
-};
-document.getElementById("btnExcluir")
-.onclick=function(){
+		btnAnterior.addEventListener('click', ()=>{
+			mesAtual--;
+			if(mesAtual < 1){ mesAtual = 12; anoAtual--; }
+			renderizarCalendario();
+		});
 
-let id =
-document.getElementById("evento_id").value;
+		btnProximo.addEventListener('click', ()=>{
+			mesAtual++;
+			if(mesAtual > 12){ mesAtual = 1; anoAtual++; }
+			renderizarCalendario();
+		});
 
-fetch(
-"/api/eventos/"+id,
-{
-method:"DELETE"
-}
+		form.addEventListener('submit', async (e)=>{
+			e.preventDefault();
+			statusEl.textContent = 'Salvando…';
+			statusEl.className = 'evento-status';
 
-)
-.then(()=>{
-fecharModal();
-calendario.refetchEvents();
-});
-};
+			const payload = {
+				nome: campoNome.value.trim(),
+				descricao: campoDescricao.value.trim(),
+				data: campoData.value,
+				cor: campoCor.value,
+				recorrencia: campoRecorrencia.value,
+			};
+
+			const id = campoId.value;
+			const url = id ? `/api/eventos/${id}` : '/api/eventos';
+			const method = id ? 'PUT' : 'POST';
+
+			try{
+				const res = await fetch(url, {
+					method,
+					headers: {'Content-Type':'application/json'},
+					body: JSON.stringify(payload),
+				});
+				const data = await res.json();
+
+				if(!res.ok || !data.ok){
+					statusEl.textContent = data.erro || 'Não foi possível salvar o evento.';
+					statusEl.className = 'evento-status erro';
+					return;
+				}
+
+				fecharModal();
+				renderizarCalendario();
+			}catch(err){
+				statusEl.textContent = 'Erro de conexão ao salvar o evento.';
+				statusEl.className = 'evento-status erro';
+			}
+		});
+
+		btnExcluir.addEventListener('click', async ()=>{
+			const id = campoId.value;
+			if(!id) return;
+			if(!confirm('Excluir este evento? Se ele for recorrente, todas as ocorrências serão removidas.')) return;
+
+			try{
+				const res = await fetch(`/api/eventos/${id}`, { method: 'DELETE' });
+				const data = await res.json();
+
+				if(!res.ok || !data.ok){
+					statusEl.textContent = data.erro || 'Não foi possível excluir o evento.';
+					statusEl.className = 'evento-status erro';
+					return;
+				}
+
+				fecharModal();
+				renderizarCalendario();
+			}catch(err){
+				statusEl.textContent = 'Erro de conexão ao excluir o evento.';
+				statusEl.className = 'evento-status erro';
+			}
+		});
+
+		renderizarCalendario();
+	})();
+
 </script>
+
 {% endblock %}

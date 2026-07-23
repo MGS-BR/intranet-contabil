@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoramento do Servidor{% endblock %}
+
+{% block content %}
+
+<h1 class="titulo-index">Monitoramento do servidor</h1>
+
+<hr>
+
+<div class="panel">
+  <h2>Saúde do servidor</h2>
+  <div class="health-grid" id="healthGrid"></div>
+</div>
+
+<div class="panel">
+  <h2>Discos</h2>
+  <div class="disk-grid" id="diskGrid">
+    <p class="lista-vazia">Carregando discos...</p>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Reiniciar intranet</h2>
+  <p class="descricao-acao">Reinicia apenas o site/aplicação. Os outros serviços do servidor continuam rodando.</p>
+  <form class="horizontal acao-form form-async" id="formReiniciarSite">
+    <div class="form-group">
+      <label for="senhaSite">Senha de administrador</label>
+      <input type="password" id="senhaSite" name="senha" required autocomplete="off">
+    </div>
+    <button type="submit" class="btn-acao">Reiniciar intranet</button>
+  </form>
+  <p class="acao-status" id="statusSite"></p>
+</div>
+
+<div class="panel">
+  <h2>Reiniciar servidor</h2>
+  <p class="descricao-acao">Reinicia a máquina inteira. Todos os serviços ficarão indisponíveis até o servidor voltar.</p>
+  <form class="horizontal acao-form form-async" id="formReiniciarServidor">
+    <div class="form-group">
+      <label for="senhaServidor">Senha de administrador</label>
+      <input type="password" id="senhaServidor" name="senha" required autocomplete="off">
+    </div>
+    <button type="submit" class="btn-acao btn-perigo">Reiniciar servidor</button>
+  </form>
+  <p class="acao-status" id="statusServidor"></p>
+</div>
+
+<script>
+const HEALTH_API_URL = '/api/health';
+const HEALTH_POLL_MS = 5000;
+
+const healthGrid = document.getElementById('healthGrid');
+const diskGrid = document.getElementById('diskGrid');
+
+let healthMontado = false;
+let discosMontados = false;
+
+function barColor(pct){
+    if(pct >= 85) return 'var(--red)';
+    if(pct >= 70) return 'var(--amber)';
+    return 'var(--green)';
+}
+
+function formatUptime(totalSeconds){
+    const d = Math.floor(totalSeconds/86400);
+    const h = Math.floor((totalSeconds%86400)/3600);
+    const m = Math.floor((totalSeconds%3600)/60);
+    return `${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+}
+
+function renderBackup(unixSeconds, nomeArquivo){
+    if(!unixSeconds) return { valor: 'sem registro', sub: '' };
+    const backupDate = new Date(unixSeconds * 1000);
+    const diffH = Math.round((Date.now() - backupDate.getTime())/3600000);
+    return {
+        valor: backupDate.toLocaleDateString('pt-BR') + ' ' + backupDate.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+        sub: (diffH <= 0 ? 'agora mesmo' : `há ${diffH}h`) + (nomeArquivo ? ` · ${nomeArquivo}` : ''),
+    };
+}
+
+function criarHealthGrid(){
+    healthGrid.innerHTML = `
+    <div class="health-card">
+      <span class="label">CPU</span>
+      <div class="value" id="cpuVal">—</div>
+      <div class="bar-track"><div class="bar-fill" id="cpuBar" style="width:0%"></div></div>
+    </div>
+    <div class="health-card">
+      <span class="label">Memória</span>
+      <div class="value" id="memVal">—</div>
+      <div class="bar-track"><div class="bar-fill" id="memBar" style="width:0%"></div></div>
+    </div>
+    <div class="health-card">
+      <span class="label">Tempo ligado</span>
+      <div class="value" id="uptimeValue">—</div>
+    </div>
+    <div class="health-card">
+      <span class="label">Último backup</span>
+      <div class="value" id="backupValue">—</div>
+      <span class="sub" id="backupSub"></span>
+    </div>
+    `;
+    healthMontado = true;
+}
+
+function atualizarBarra(valId, barId, pct){
+    document.getElementById(valId).textContent = Math.round(pct) + '%';
+    const bar = document.getElementById(barId);
+    bar.style.width = pct + '%';
+    bar.style.background = barColor(pct);
+}
+
+function montarHealthGrid(data){
+    if(!healthMontado) criarHealthGrid();
+
+    atualizarBarra('cpuVal', 'cpuBar', data.cpu_percent);
+    atualizarBarra('memVal', 'memBar', data.mem_percent);
+
+    document.getElementById('uptimeValue').textContent = formatUptime(data.uptime_segundos);
+
+    const backup = renderBackup(data.ultimo_backup_timestamp, data.ultimo_backup_arquivo);
+    document.getElementById('backupValue').textContent = backup.valor;
+    document.getElementById('backupSub').textContent = backup.sub;
+}
+
+function criarDiskGrid(discos){
+    diskGrid.innerHTML = discos.map((d, i) => `
+        <div class="health-card">
+          <span class="label">${d.dispositivo} (${d.ponto_montagem})</span>
+          <div class="value" id="diskVal${i}">—</div>
+          <div class="bar-track"><div class="bar-fill" id="diskBar${i}" style="width:0%"></div></div>
+          <span class="sub" id="diskSub${i}"></span>
+        </div>
+    `).join('');
+    discosMontados = true;
+}
+
+function montarDiskGrid(discos){
+    if(!discos || discos.length === 0){
+        diskGrid.innerHTML = '<p class="lista-vazia">Nenhum disco encontrado.</p>';
+        discosMontados = false;
+        return;
+    }
+
+    if(!discosMontados || diskGrid.querySelectorAll('.health-card').length !== discos.length){
+        criarDiskGrid(discos);
+    }
+
+    discos.forEach((d, i) => {
+        atualizarBarra(`diskVal${i}`, `diskBar${i}`, d.percentual);
+        document.getElementById(`diskSub${i}`).textContent = `${d.usado_gb} GB de ${d.total_gb} GB · ${d.sistema_arquivos}`;
+    });
+}
+
+async function atualizarMonitoramento(){
+    try{
+        const res = await fetch(HEALTH_API_URL, { cache: 'no-store' });
+        if(!res.ok) throw new Error('Resposta HTTP ' + res.status);
+        const data = await res.json();
+        montarHealthGrid(data);
+        montarDiskGrid(data.discos);
+    }catch(err){
+        console.error('Falha ao buscar dados do servidor:', err);
+        if(!healthMontado){
+            healthGrid.innerHTML = '<p class="lista-vazia">Não foi possível carregar os dados do servidor.</p>';
+        }
+    }
+}
+
+atualizarMonitoramento();
+setInterval(atualizarMonitoramento, HEALTH_POLL_MS);
+
+function configurarAcao(formId, statusId, url, mensagemConfirmacao){
+    const form = document.getElementById(formId);
+    const status = document.getElementById(statusId);
+
+    form.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+
+        if(!confirm(mensagemConfirmacao)) {
+			document.getElementById('loading-overlay').classList.remove('active');
+			return;
+		}
+		
+        const senha = form.querySelector('input[name="senha"]').value;
+        const botao = form.querySelector('button');
+
+        botao.disabled = true;
+        status.textContent = '';
+        status.className = 'acao-status';
+
+        try{
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ senha }),
+            });
+            const data = await res.json();
+
+            if(data.ok){
+                status.textContent = data.mensagem || 'Comando enviado.';
+                status.classList.add('ok');
+                form.reset();
+            } else {
+                status.textContent = data.erro || 'Não foi possível executar a ação.';
+                status.classList.add('erro');
+            }
+        }catch(err){
+            status.textContent = 'Erro de comunicação com o servidor.';
+            status.classList.add('erro');
+        }finally{
+            botao.disabled = false;
+			document.getElementById('loading-overlay').classList.remove('active');
+        }
+    });
+}
+
+configurarAcao('formReiniciarSite', 'statusSite', '/servidor/reiniciar-site', 'Confirma o reinício da intranet?');
+configurarAcao('formReiniciarServidor', 'statusServidor', '/servidor/reiniciar-servidor', 'Confirma o reinício do servidor inteiro? Todos os serviços ficarão fora do ar por alguns minutos.');
+</script>
+
+{% endblock %}

@@ -1,53 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}
-Cadastro Hora Extra
-{% endblock %}
+{% block title %}Horas extras{% endblock %}
 
+{% block content %}
 
-{% block conteudo %}
-<body>
-<h1>Registro de Horas Extras</h1>
+<h1 class="titulo-index">Horas extras</h1>
 
-<p>Registre as horas extras trabalhadas pelos funcionários do escritório.</p>
+<br>
+
+<p class="descricao">Registre as horas extras trabalhadas pelos funcionários do escritório.</p>
 
 <hr>
 
-<h2>Cadastrar Funcionário</h2>
+<form class="horizontal" method="GET">
+    <input type="month" name="mes" value="{{ mes }}">
 
-<form method="POST" action="/horas-extras/funcionario/novo">
-    <input
-        type="text"
-        name="nome"
-        placeholder="Nome do funcionário"
-        required
-    >
-
-    <button type="submit">
-        Cadastrar
-    </button>
+    <button type="submit">Filtrar</button>
 </form>
 
-<hr>
-
-<form method="GET">
-    <label>Mês:</label>
-	<br>
-    <input
-        type="month"
-        name="mes"
-        value="{{ mes }}"
-    >
-
-    <button type="submit">
-        Filtrar
-    </button>
-</form>
-<hr>
-
-<h2>Resumo do mês</h2>
-
-<table border="1" cellpadding="8" cellspacing="0">
+<div class="tabela-wrapper"><table border="1" cellpadding="8" cellspacing="0">
     <thead>
         <tr>
             <th>Funcionário</th>
@@ -68,7 +39,7 @@ Cadastro Hora Extra
             </td>
 
             <td>
-                <a href="/horas-extras/funcionario/{{ f.id }}?mes={{ mes }}">
+                <a href="/rh/horas-extras/funcionario/{{ f.id }}?mes={{ mes }}">
                     Visualizar
                 </a>
             </td>
@@ -77,11 +48,13 @@ Cadastro Hora Extra
     {% endfor %}
 
     </tbody>
-</table>
+</table></div>
 
-<h2>
+<br>
+
+<h3>
 Total geral do mês:
 {{ "%.2f"|format(total_geral) }} horas
-</h2>
-</body>
+</h3>
+
 {% endblock %}

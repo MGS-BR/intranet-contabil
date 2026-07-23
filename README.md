@@ -3,7 +3,6 @@
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Python CI](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml/badge.svg)](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml)
 
 Sistema interno (intranet) desenvolvido em **Flask** para escritórios de contabilidade. Centraliza em um único painel web o acesso a arquivos de clientes, procedimentos internos, cadastro de empresas, controle de horas extras, backup, monitoramento do servidor, geração de PDDE e OCR de PDFs, entre outras rotinas do dia a dia do escritório.
 
@@ -25,7 +24,10 @@ Sistema interno (intranet) desenvolvido em **Flask** para escritórios de contab
 | **OCR** | Aplica OCR em PDFs (via `ocrmypdf`) tornando documentos digitalizados pesquisáveis. |
 | **Ajuda eSocial** | Base de consulta com códigos de erro do eSocial e suas soluções. |
 | **Backup** | Executa rotina de backup (Robocopy) da pasta de arquivos e exibe o log da última execução. |
-| **Servidor** | Painel com uso de CPU, memória, disco e tempo de atividade, além de botões para reiniciar o servidor ou apenas reiniciar a aplicação (protegido por `SENHA_ADMIN`). |
+| **Servidor** (`monitoramento.html`) | Painel com uso de CPU, memória, disco e tempo de atividade, além de botões para reiniciar o servidor ou apenas reiniciar a aplicação (protegido por `SENHA_ADMIN`). |
+| **Trello** | Cria cards em um board do Trello configurado via `TRELLO_API_KEY`, `TRELLO_TOKEN` e `TRELLO_BOARD_ID`. |
+| **Pasta organizadora** | Roda rotinas de organização de arquivos e mostra status/log da última execução. |
+| **Configurações** | Tela protegida por login (`/configuracoes`) para editar nome do escritório, favicon, pastas do `config.json` e apagar tabelas do banco. |
 
 ## Estrutura dos arquivos
 
@@ -34,12 +36,13 @@ intranet-contabil/
 ├── app.py                     # Aplicação Flask principal (rotas, regras de negócio)
 ├── banco.py                   # Criação/atualização do schema do SQLite e utilitários de CLI
 ├── criar_banco.py             # Script de conveniência: chama banco.criar_tabelas()
-├── banco.db                   # Banco de dados SQLite (gerado/atualizado automaticamente)
+├── banco.db                   # Banco de dados SQLite (gerado/atualizado automaticamente, não versionado)
 ├── config.json                # Configuração de pastas e scripts utilizados pelo sistema
 ├── requirements.txt           # Dependências Python do projeto
-├── start.bat                  # Script de instalação inicial (Windows)
-├── indexar_arquivos.py        # Varre PASTA_ARQUIVOS e popula a tabela indice_arquivos
+├── config.bat                 # Script de instalação inicial (Windows) — cria venv, instala deps, gera .env e agenda as tarefas
+├── run.bat                    # Ativa o venv e roda "python app.py" diretamente
 ├── indexar_empresas.py        # Lê PDFs de CNPJ/QSA em PASTA_CLIENTES e popula a tabela empresas
+├── pasta_organizadora.py      # Rotina de organização automática de arquivos
 ├── pdde_importador.py         # Geração das planilhas de importação do módulo PDDE
 │
 ├── templates/                 # Templates Jinja2 (HTML) de cada página
@@ -51,17 +54,27 @@ intranet-contabil/
 │   ├── arquivos.html
 │   ├── empresas.html
 │   ├── empresa.html           # Detalhe de uma empresa
-│   ├── pendencias.html
+│   ├── empresas_pendencias.html
+│   ├── funcionario.html
 │   ├── horas_extras.html
 │   ├── horas_extras_funcionario.html
 │   ├── pdde.html
 │   ├── ocr.html
 │   ├── esocial.html
-│   ├── servidor.html
+│   ├── monitoramento.html     # Painel do servidor
+│   ├── configuracoes.html
+│   ├── trello.html
+│   ├── pasta_organizadora.html
 │   └── backup.html
 │
 ├── static/
 │   ├── style.css              # Estilos da aplicação
+│   ├── navbar.js
+│   ├── backup.js
+│   ├── ocr.js
+│   ├── pdde.js
+│   ├── trello.js
+│   ├── pasta_organizadora.js
 │   └── favicon.ico
 │
 ├── scripts/                   # Scripts auxiliares do Windows
@@ -71,7 +84,7 @@ intranet-contabil/
 │   └── backup.bat             # Executa o backup via robocopy, lendo as pastas do config.json
 │
 ├── modelos/                    # Modelos usados pelo módulo PDDE
-│   ├── PLCONTAS.PDF                          # Plano de contas de referência
+│   ├── PLCONTAS.pdf                          # Plano de contas de referência
 │   └── Planilha Importação Contmatic.xlsx    # Modelo de planilha de importação
 │
 ├── exemplos/                   # Pastas de EXEMPLO (placeholders) — substituir em produção
@@ -136,11 +149,12 @@ O banco SQLite é criado/atualizado automaticamente (tanto por `criar_banco.py` 
 ### 1. Instalação automática (recomendado)
 
 1. Extraia o projeto em uma pasta do servidor (ex.: `D:\Escritorio\intranet-contabil`).
-2. Execute o arquivo **`start.bat`**, que fará automaticamente:
+2. Execute o arquivo **`config.bat`** **como Administrador**, que fará automaticamente:
    - Criação do ambiente virtual (`venv`);
    - Instalação das dependências de `requirements.txt`;
    - Criação/atualização do banco de dados (`criar_banco.py`);
-   - Criação de um arquivo `.env` com valores **de teste** (`SECRET_KEY`, `SENHA_SITE`, `SENHA_ADMIN` = `teste`).
+   - Criação de um arquivo `.env` com valores **de teste** (`SECRET_KEY`, `SENHA_SITE`, `SENHA_ADMIN`, `TRELLO_API_KEY`, `TRELLO_TOKEN`, `TRELLO_BOARD_ID` = `teste`);
+   - Criação de duas tarefas no Agendador de Tarefas do Windows (`IniciarSistemaInterno` e `ReiniciarSistemaInterno`), que apontam para os scripts definidos em `SCRIPT_INICIAR_SITE`/`SCRIPT_REINICIAR_SITE` no `config.json`.
 
 3. Ao final, o script vai pedir para você:
    - Editar o **`config.json`** com os caminhos reais do escritório;
@@ -167,7 +181,7 @@ SENHA_ADMIN=senha-para-acoes-administrativas
 - `SENHA_SITE` — senha única usada por todos para fazer login no sistema (tela `/login`).
 - `SENHA_ADMIN` — senha exigida para ações sensíveis (reiniciar o servidor ou reiniciar só a aplicação, em `/servidor`). Se não for definida, o sistema usa `SENHA_SITE` como fallback.
 
-> 🔒 Nunca deixe o sistema em produção com as senhas de teste (`teste`) criadas pelo `start.bat`.
+> 🔒 Nunca deixe o sistema em produção com as senhas de teste (`teste`) criadas pelo `config.bat`.
 
 ### 3. Configurando o `config.json`
 
@@ -187,7 +201,7 @@ Esse arquivo define **onde estão** as pastas reais do escritório e os scripts 
 
     "PASTA_UPLOAD_PDDE": "uploads\\pdde",
     "PASTA_SAIDA_PDDE": "saida\\pdde",
-    "PLANO_CONTAS_PDDE": "modelos\\PLCONTAS.PDF",
+    "PLANO_CONTAS_PDDE": "modelos\\PLCONTAS.pdf",
     "MODELO_IMPORTACAO_CONTMATIC": "modelos\\Planilha Importação Contmatic.xlsx",
 
     "PASTA_UPLOAD_PDF": "uploads\\pdf",

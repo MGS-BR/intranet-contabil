@@ -1,22 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}
-Gerenciador de Arquivos
-{% endblock %}
+{% block title %}Arquivos{% endblock %}
 
-{% block conteudo %}
+{% block content %}
 
-<body>
-<h1>Localizador de Arquivos</h1>
+<h1 class="titulo-index">Arquivos do escritório</h1>
 
 <hr>
 
-<form method="POST" action="/arquivos/atualizar">
-    <button type="submit">Atualizar arquivos</button>
-</form>
-
 <h2>Enviar arquivos para a pasta atual</h2>
-<form method="POST" action="/arquivos/upload" class="upload-form" onsubmit="return confirmarUpload();" enctype="multipart/form-data">
+<form method="POST" action="/documentos/arquivos/upload" class="upload-form" onsubmit="return confirmarUpload();" enctype="multipart/form-data">
     <input type="hidden" name="pasta_atual" value="{{ pasta }}">
 
     <div id="dropzone">
@@ -31,29 +24,31 @@ Gerenciador de Arquivos
 
 <hr>
 
-<form method="GET">
-    <input type="text" name="busca" placeholder="Pesquisar arquivo" value="{{ busca }}">
-    <button>Buscar</button>
-</form>
+<div class="lista">
 
-{% if pasta %}
-    <a href="/arquivos">Raiz</a>
-    <p>Pasta atual: {{ pasta }}</p>
-{% else %}
-    <p>Pasta atual: Raiz</p>
-{% endif %}
+	{% if pasta %}
+		{% set pasta_pai = pasta.rsplit('\\', 1)[0] if '\\' in pasta else '' %}
+		<a href="/documentos/arquivos?pasta={{ pasta_pai }}" class="btn-voltar">⬅ Voltar</a>
+		<a class="divisor"> | </a>
+		<a href="/documentos/arquivos">Raiz</a>
+		<p>Pasta atual: {{ pasta }}</p>
+	{% else %}
+		<p>Pasta atual: Raiz</p>
+	{% endif %}
 
-{% for item in itens %}
-    {% if item.tipo == "pasta" %}
-        <p>📁 <a href="/arquivos?pasta={{ item.rel }}">{{ item.nome }}</a></p>
-    {% else %}
-        <p>
-            📄 {{ item.nome }}
-            {% if item.pasta %}<br><small>{{ item.pasta }}</small>{% endif %}
-            <a href="/arquivos/abrir?arquivo={{ item.rel }}" target="_blank">Abrir</a>
-        </p>
-    {% endif %}
-{% endfor %}
+	{% for item in itens %}
+		{% if item.tipo == "pasta" %}
+			<p>📁 <a href="/documentos/arquivos?pasta={{ item.rel }}">{{ item.nome }}</a></p>
+		{% else %}
+			<p>
+				📄 {{ item.nome }}
+				{% if item.pasta %}<br><small>{{ item.pasta }}</small>{% endif %}
+				<a href="/documentos/arquivos/abrir?arquivo={{ item.rel }}" target="_blank">Abrir</a>
+			</p>
+		{% endif %}
+	{% endfor %}
+
+</div>
 
 <script>
 const dropzone = document.getElementById("dropzone");
@@ -97,4 +92,5 @@ function confirmarUpload() {
 }
 </script>
 </body>
+
 {% endblock %}

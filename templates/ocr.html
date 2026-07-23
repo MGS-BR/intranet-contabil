@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}
-Converter PDF
-{% endblock %}
+{% block title %}Converter PDF{% endblock %}
 
-{% block conteudo %}
-<body>
+{% block content %}
 
-<h2>Converter PDF para pesquisável</h2>
+<h1 class="titulo-index">Converter PDF</h1>
 
+<br>
+
+<p class="descricao">Envie um PDF que não seja possível selecionar texto, o sistema vai gerar um PDF idêntico porém com texto selecionável.</p>
+
+<hr>
 
 <form method="POST" enctype="multipart/form-data" class="upload-form">
 
@@ -20,22 +22,26 @@ Converter PDF
 	
 	<p id="lista-arquivos">Nenhum arquivo foi selecionado.</p>
 
-	<p>O processo de conversão pode demorar alguns minutos.</p>
-
-	<button type="button" onclick="enviar()">
-	Converter
-	</button>
+	<p class="descricao">O processo de conversão pode demorar alguns minutos.</p>
 	
+	<br>
+
+	<div class="form-group">
+		<button type="button" class="btn-upload" onclick="enviar()">
+		Converter
+		</button>
+	</div>
+	
+	<div id="status-documentos"></div>
 
 </form>
-
-<div id="status-documentos"></div>
 
 {% if erro %}
     <div class="erro">{{ erro }}</div>
 {% endif %}
 
 <script>
+
 const dropzone = document.getElementById("dropzone");
 const inputArquivos = document.getElementById("input-arquivos-pdf");
 const listaArquivos = document.getElementById("lista-arquivos");
@@ -98,7 +104,7 @@ function enviar(){
 		);
 	}
 
-	fetch("/ocr",{
+	fetch("/utilidades/pdf",{
 
 	method:"POST",
 	body:form
@@ -115,7 +121,7 @@ function enviar(){
 	});
 	function verificarStatus(id){
 		let intervalo = setInterval(()=>{
-			fetch("/status/"+id)
+			fetch("/utilidades/pdf/status/"+id)
 			.then(r=>r.json())
 			.then(status=>{
 			let documento = document.getElementById("doc-"+id)
@@ -132,7 +138,7 @@ function enviar(){
 				
 				<br>
 
-				<a href="/download/${id}">
+				<a class="download" href="/utilidades/pdf/download/${id}">
 				💾 Baixar PDF
 				</a>
 
@@ -148,7 +154,7 @@ function enviar(){
 
 }
 
+
 </script>
 
-</body>
 {% endblock %}

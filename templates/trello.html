@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Trello{% endblock %}
+
+{% block content %}
+
+<h1 class="titulo-index">Novo cartão no Trello</h1>
+
+<br>
+
+<p class="descricao">Preencha o cartão abaixo como se estivesse no Trello. Ao concluir, ele será criado de verdade no board.</p>
+<hr>
+
+{% if not config_ok %}
+<div class="panel">
+    <h2>Configuração pendente</h2>
+    <p>As credenciais do Trello (API key, token, board e lista) ainda não foram definidas no servidor. Configure as variáveis de ambiente em <code>trello_routes.py</code> antes de usar esta tela.</p>
+</div>
+{% endif %}
+
+<div class="trello-lista-preview">
+    <div class="trello-lista-header">
+        <span>Novo cartão</span>
+    </div>
+
+    <!-- "cartão" que abre o modal, igual ao "+ Adicionar um cartão" do Trello -->
+    <button type="button" id="abrir-cartao" class="trello-add-card" {% if not config_ok %}disabled{% endif %}>
+        <span class="plus">+</span> Adicionar um cartão
+    </button>
+</div>
+
+<!-- ---------- MODAL DO CARTÃO (réplica do Trello) ---------- -->
+<div id="trello-overlay" class="trello-overlay">
+    <div class="trello-modal">
+
+        <div class="trello-modal-topo">
+            <select id="card-lista" class="trello-lista-pill">
+                <option value="">Selecione a lista...</option>
+                {% for lista in listas %}
+                <option value="{{ lista.id }}">{{ lista.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" id="fechar-modal" class="trello-fechar">✕</button>
+        </div>
+
+        <div class="trello-titulo-linha">
+            <span class="trello-circulo"></span>
+            <input type="text" id="card-titulo" class="trello-titulo-input-grande" placeholder="Título do cartão" maxlength="512">
+        </div>
+
+        <div class="trello-acoes-rapidas">
+            <button type="button" class="trello-acao-btn" data-scroll="secao-etiquetas">
+                <span class="trello-icone">🏷</span> Etiquetas
+            </button>
+            <button type="button" class="trello-acao-btn" data-scroll="secao-checklist">
+                <span class="trello-icone">☑</span> Checklist
+            </button>
+            <button type="button" class="trello-acao-btn" data-scroll="secao-membros">
+                <span class="trello-icone">👤+</span> Membros
+            </button>
+        </div>
+
+        <div class="trello-modal-corpo">
+
+            <!-- Labels -->
+            <div class="trello-secao" id="secao-etiquetas">
+                <h4 class="trello-secao-titulo">Etiquetas</h4>
+                <div class="trello-labels" id="card-labels">
+                    {% for label in labels %}
+                    <button type="button"
+                            class="trello-label-chip trello-cor-{{ label.color or 'none' }}"
+                            data-id="{{ label.id }}"
+                            title="{{ label.name }}">
+                        {{ label.name if label.name else '' }}
+                    </button>
+                    {% else %}
+                    <span class="trello-vazio">Nenhuma etiqueta encontrada no board.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Membros -->
+            <div class="trello-secao" id="secao-membros">
+                <h4 class="trello-secao-titulo">Membros</h4>
+                <div class="trello-membros" id="card-membros">
+                    {% for m in members %}
+                    <button type="button" class="trello-membro-chip" data-id="{{ m.id }}" title="{{ m.fullName }}">
+						{% set nomes = m.fullName.split() %}
+						{% if nomes|length == 1 %}
+							{{ nomes[0][0].upper() }}}
+						{% else %}
+							{{ (nomes[0][0] + nomes[-1][0]).upper() }}
+						{% endif %}
+                    </button>
+                    {% else %}
+                    <span class="trello-vazio">Nenhum membro encontrado.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Data de entrega -->
+            <div class="trello-secao">
+                <h4 class="trello-secao-titulo">Data Entrega</h4>
+                <input type="date" id="card-data" class="trello-data-input">
+            </div>
+
+            <!-- Descrição -->
+            <div class="trello-secao">
+                <div class="trello-secao-header">
+                    <h4 class="trello-secao-titulo">
+                        <span class="trello-icone">📄</span> Descrição
+                    </h4>
+                    <button type="button" class="trello-btn-editar" data-focus="card-descricao">Editar</button>
+                </div>
+                <textarea id="card-descricao" placeholder="Adicione uma descrição mais detalhada..."></textarea>
+            </div>
+
+            <!-- Checklist -->
+            <div class="trello-secao" id="secao-checklist">
+                <div class="trello-secao-header">
+                    <h4 class="trello-secao-titulo">
+                        <span class="trello-icone">☑</span> Checklist
+                    </h4>
+                    <button type="button" id="btn-limpar-checklist" class="trello-btn-editar">Limpar</button>
+                </div>
+
+                <div class="trello-checklist-progresso">
+                    <span id="checklist-percentual">0%</span>
+                    <div class="trello-progresso-track">
+                        <div id="checklist-progresso-fill" class="trello-progresso-fill" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <div id="checklist-itens" class="trello-checklist-itens"></div>
+                <div class="trello-checklist-add">
+                    <input type="text" id="novo-item-checklist" placeholder="Adicionar um item">
+                    <button type="button" id="btn-add-item">Adicionar</button>
+                </div>
+            </div>
+
+            <button type="button" id="btn-salvar-cartao" class="trello-btn-salvar" {% if not config_ok %}disabled{% endif %}>
+                Criar cartão
+            </button>
+            <div id="trello-status" class="trello-status"></div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/trello.js"></script>
+{% endblock %}

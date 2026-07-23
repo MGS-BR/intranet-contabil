@@ -1,32 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}
-Empresas
-{% endblock %}
+{% block title %}Empresas{% endblock %}
 
+{% block content %}
 
-{% block conteudo %}
-<body>
-<h1>Consulta de Empresas</h1>
+<h1 class="titulo-index">Empresas do escritório</h1>
 
 <hr>
 
-<form method="POST" action="/empresas/atualizar">
-    <button type="submit">Atualizar empresas</button>
+<form class="horizontal" method="get">
+	<input type="text" name="busca" placeholder="Pesquisar por razão social, fantasia, CNPJ, situação..." value="{{ busca }}">
+	<button type="submit">Buscar</button>
+	
+	<button type="button" id="btn-executar-script" onclick="executarScript()">
+		Mapear empresas
+	</button>
+	
 </form>
 
-<div class="links-rapidos">
-<a href="/pendencias">Relatório de Pendências</a>
-</div>
-
-<form method="get">
-    <input type="text" name="busca" placeholder="Pesquisar por razão social, fantasia, CNPJ, situação..." value="{{ busca }}">
-    <button type="submit">Buscar</button>
-</form>
-
-<br>
-
-<table border="1" cellpadding="8">
+<div class="tabela-wrapper"><table border="1" cellpadding="8">
     <tr>
         <th>Razão Social</th>
         <th>CNPJ</th>
@@ -46,10 +38,61 @@ Empresas
         <td><a href="/empresa/{{ empresa.id }}">Visualizar</a></td>
     </tr>
     {% endfor %}
-</table>
+</table></div>
 
 {% if not empresas %}
     <p>Nenhuma empresa encontrada.</p>
 {% endif %}
-</body>
+
+<script>
+function executarScript() {
+    const btn = document.getElementById("btn-executar-script");
+    const textoOriginal = btn.textContent;
+
+    btn.disabled = true;
+    btn.textContent = "Executando...";
+
+    fetch("/empresas/executar-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
+    })
+    .then(r => r.json())
+    .then(dados => {
+        if (!dados.ok) {
+            mostrarResultado(btn, textoOriginal, "Erro", false);
+            return;
+        }
+        checarStatus(btn, textoOriginal);
+    });
+}
+
+function checarStatus(btn, textoOriginal) {
+    fetch("/empresas/executar-script/status")
+        .then(r => r.json())
+        .then(dados => {
+            if (dados.rodando) {
+                setTimeout(() => checarStatus(btn, textoOriginal), 1500);
+                return;
+            }
+            if (dados.ultimo_erro) {
+                mostrarResultado(btn, textoOriginal, "Erro", false);
+            } else {
+                mostrarResultado(btn, textoOriginal, "Concluído!", true);
+            }
+        });
+}
+
+function mostrarResultado(btn, textoOriginal, texto, sucesso) {
+    btn.textContent = texto;
+    btn.classList.add(sucesso ? "btn-sucesso-temp" : "btn-erro-temp");
+
+    setTimeout(() => {
+        btn.textContent = textoOriginal;
+        btn.classList.remove("btn-sucesso-temp", "btn-erro-temp");
+        btn.disabled = false;
+    }, 2500);
+}
+</script>
+
 {% endblock %}

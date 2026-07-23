@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Funcionários - {{ nome_escritorio }}{% endblock %}
+
+{% block content %}
+
+<h1 class="titulo-index">Funcionários do escritório</h1>
+
+<hr>
+
+<div class="panel">
+    <h2>Cadastrar Funcionário</h2>
+    <form action="/rh/funcionario/cadastrar" method="POST" class="horizontal">
+        <div class="form-group">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" required>
+        </div>
+        <div class="form-group">
+            <label for="funcao">Função</label>
+            <input type="text" id="funcao" name="funcao">
+        </div>
+        <div class="form-group form-full">
+            <label for="descricao">Descrição da função</label>
+            <textarea id="descricao" name="descricao"></textarea>
+        </div>
+        <button type="submit">Cadastrar</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h2>Funcionários cadastrados</h2>
+
+    {% if funcionarios %}
+    <div class="tabela-wrapper"><table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Função</th>
+                <th>Descrição</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in funcionarios %}
+            <tr>
+                <td>{{ f.nome }}</td>
+                <td>{{ f.funcao or "-" }}</td>
+                <td>{{ f.descricao or "-" }}</td>
+                <td>{{ "Ativo" if f.ativo else "Inativo" }}</td>
+                <td>
+                    <button type="button" class="btn-editar-funcionario"
+                        data-id="{{ f.id }}"
+                        data-nome="{{ f.nome }}"
+                        data-funcao="{{ f.funcao or '' }}"
+                        data-descricao="{{ f.descricao or '' }}"
+                        data-ativo="{{ 1 if f.ativo else 0 }}">
+                        Editar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table></div>
+    {% else %}
+    <p class="lista-vazia">Nenhum funcionário cadastrado ainda.</p>
+    {% endif %}
+</div>
+
+<div class="trello-overlay" id="overlayEditarFuncionario">
+    <div class="trello-modal" style="max-width:520px;">
+        <div class="trello-modal-topo">
+            <button type="button" class="trello-fechar" onclick="fecharModalFuncionario()">✕</button>
+        </div>
+        <form action="/rh/funcionario/editar/0" method="POST" class="vertical" id="formEditarFuncionario">
+            <div class="form-group">
+                <label for="edit-nome">Nome</label>
+                <input type="text" id="edit-nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-funcao">Função</label>
+                <input type="text" id="edit-funcao" name="funcao">
+            </div>
+            <div class="form-group">
+                <label for="edit-descricao">Descrição da função</label>
+                <textarea id="edit-descricao" name="descricao"></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="edit-ativo" name="ativo" style="width:auto;display:inline-block;margin-right:6px;">
+                    Funcionário ativo
+                </label>
+            </div>
+            <button type="submit">Salvar alterações</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirModalFuncionario(btn) {
+    var form = document.getElementById("formEditarFuncionario");
+    form.action = "/rh/funcionario/editar/" + btn.dataset.id;
+    document.getElementById("edit-nome").value = btn.dataset.nome;
+    document.getElementById("edit-funcao").value = btn.dataset.funcao;
+    document.getElementById("edit-descricao").value = btn.dataset.descricao;
+    document.getElementById("edit-ativo").checked = btn.dataset.ativo === "1";
+    document.getElementById("overlayEditarFuncionario").classList.add("aberto");
+}
+
+function fecharModalFuncionario() {
+    document.getElementById("overlayEditarFuncionario").classList.remove("aberto");
+}
+
+document.querySelectorAll(".btn-editar-funcionario").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+        abrirModalFuncionario(btn);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações{% endblock %}
+
+{% block content %}
+
+{% if not autenticado %}
+
+<div class="panel" style="max-width:400px; margin:60px auto;">
+    <h2>Área restrita</h2>
+    <form class="vertical" action="/configuracoes/entrar" method="POST">
+        <div class="form-group">
+            <label>Senha de administrador</label>
+            <input type="password" name="senha" required autofocus>
+        </div>
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+
+{% else %}
+
+<div class="barra-acoes-topo">
+    <form action="/configuracoes/sair" method="POST" style="display:inline; max-width:none; padding:0; margin:0;">
+        <button type="submit" class="btn-perigo" style="width:auto;">Sair do painel</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h2>Identificação do escritório</h2>
+    <form class="horizontal" action="/configuracoes/salvar-nome" method="POST">
+        <div class="form-group">
+            <label>Nome do escritório</label>
+            <input type="text" name="nome_escritorio" value="{{ config.get('NOME_ESCRITÓRIO', '') }}" required>
+        </div>
+        <button type="submit">Salvar nome</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h2>Favicon</h2>
+    <form class="horizontal" action="/configuracoes/favicon" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Novo favicon (.ico ou .png)</label>
+            <input type="file" name="favicon" accept=".ico,.png" required>
+        </div>
+        <button type="submit">Enviar favicon</button>
+    </form>
+    <p class="descricao descricao-acao">Favicon atual: {{ favicon_arquivo }}</p>
+</div>
+
+<div class="panel">
+    <h2>Diretórios do sistema</h2>
+    <form class="vertical" action="/configuracoes/salvar-pastas" method="POST">
+
+        <div class="form-group">
+            <label>Pasta de destino do backup</label>
+            <input type="text" name="pasta_backup" value="{{ config.get('PASTA_BACKUP', '') }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Arquivo de log do backup</label>
+            <input type="text" name="log_backup" value="{{ config.get('LOG_BACKUP', '') }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Pasta de procedimentos</label>
+            <input type="text" name="pasta_procedimentos" value="{{ config.get('PASTAS_PROCEDIMENTOS', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label>Pasta de arquivos</label>
+            <input type="text" name="pasta_arquivos" value="{{ config.get('PASTA_ARQUIVOS', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label>Pasta de clientes</label>
+            <input type="text" name="pasta_clientes" value="{{ config.get('PASTA_CLIENTES', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label>Pasta de APMs</label>
+            <input type="text" name="pasta_apms" value="{{ config.get('PASTA_APMS', '') }}" required>
+        </div>
+        <div class="form-group">
+            <label>Pasta organizadora</label>
+            <input type="text" name="pasta_organizadora" value="{{ config.get('PASTA_ORGANIZADORA', '') }}" required>
+        </div>
+
+        <button type="submit">Salvar pastas</button>
+    </form>
+</div>
+
+<div class="panel">
+    <h2>Zona de perigo — banco de dados</h2>
+    <p class="descricao descricao-acao">
+        Esta ação apaga <strong>todas as tabelas</strong> do banco de dados (empresas, sócios, horas extras, erros do eSocial, etc). Não é possível desfazer.
+    </p>
+
+    <div class="acao-centralizada">
+        <button type="button" class="btn-perigo" onclick="abrirModalApagar()">
+            Apagar todas as tabelas
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmação -->
+<div class="trello-overlay" id="modal-apagar-tabela">
+    <div class="trello-modal">
+        <div class="trello-modal-topo">
+            <span class="trello-lista-pill trello-erro">Ação irreversível</span>
+            <button type="button" class="trello-fechar" onclick="fecharModalApagar()">✕</button>
+        </div>
+        <div class="trello-modal-corpo">
+            <form action="/configuracoes/apagar-tabelas" method="POST"
+                  onsubmit="return confirm('Tem certeza ABSOLUTA? Isso vai apagar TODOS os dados de TODAS as tabelas permanentemente.');">
+                <p>Esta ação vai apagar <strong>todos os dados de todas as tabelas</strong> do banco de dados.</p>
+
+                <div class="form-group">
+                    <label>Digite <code>APAGAR TUDO</code> para confirmar</label>
+                    <input type="text" name="confirmacao" required>
+                </div>
+
+                <button type="submit" class="btn-perigo" style="width:100%;">
+                    Apagar todas as tabelas definitivamente
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function abrirModalApagar() {
+    document.getElementById("modal-apagar-tabela").classList.add("aberto");
+}
+function fecharModalApagar() {
+    document.getElementById("modal-apagar-tabela").classList.remove("aberto");
+}
+</script>
+{% endif %}
+{% endblock %}

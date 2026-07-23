@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Pasta organizadora{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <h2>Pasta organizadora</h2>
+
+    <div class="organizadora-topo">
+        <div class="organizadora-info">
+            <span class="label">Última organização</span>
+            <span class="valor" id="info-ultima">{{ ultima_organizacao or "—" }}</span>
+        </div>
+        <div class="organizadora-info">
+            <span class="label">Próxima organização</span>
+            <span class="valor" id="info-proxima">{{ proxima_organizacao or "—" }}</span>
+        </div>
+        <button id="btn-organizar-agora" class="btn-acao">Organizar agora</button>
+    </div>
+
+    <div id="organizadora-status" class="organizadora-status"></div>
+
+    <div class="organizadora-grid">
+
+        {% set secoes = [
+            ("dctfweb", "DCTFWEB"),
+            ("fgts", "FGTS"),
+            ("das", "DAS-MENSAL"),
+            ("consulta", "Consulta / Notas fiscais"),
+            ("clientes", "Clientes"),
+            ("apms", "APMS"),
+        ] %}
+
+        {% for chave, titulo in secoes %}
+        <div class="organizadora-secao" data-secao="{{ chave }}">
+            <h3>{{ titulo }}</h3>
+
+            <div class="organizadora-dropzone" data-secao="{{ chave }}">
+                <span class="ico">⬆</span>
+                <p>Arraste arquivos aqui</p>
+                <input type="file" class="organizadora-input" data-secao="{{ chave }}" multiple hidden>
+            </div>
+
+            <ul class="organizadora-lista-arquivos" id="lista-{{ chave }}">
+                {% for nome in arquivos_por_secao.get(chave, []) %}
+                <li>{{ nome }}</li>
+                {% else %}
+                <li class="vazio">Nenhum arquivo</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+<script src="/static/pasta_organizadora.js"></script>
+{% endblock %}

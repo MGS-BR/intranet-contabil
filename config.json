@@ -1,23 +1,22 @@
 {
+    "NOME_ESCRITÓRIO": "Escritório",
+    "FAVICON_ARQUIVO": "favicon.ico",
+    "FAVICON_VERSAO": "1",
     "PASTAS_PROCEDIMENTOS": "exemplos\\procedimentos",
     "PASTA_ARQUIVOS": "exemplos\\arquivos",
-    "PASTA_CLIENTES": "exemplos\\clientes",
-	"PASTA_APMS": "exemplos\\clientes\\APMS"
+    "PASTA_CLIENTES": "exemplos\\arquivos\\clientes",
+    "PASTA_APMS": "exemplos\\arquivos\\clientes\\APMS",
     "PASTA_BACKUP": "exemplos\\backup",
-
     "SCRIPT_BACKUP": "scripts\\backup.bat",
-    "LOG_BACKUP": "scripts\\backup.log",
+    "LOG_BACKUP": "exemplos\\backup\\backup.log",
     "SCRIPT_REINICIAR": "scripts\\reiniciar.bat",
     "SCRIPT_REINICIAR_SITE": "scripts\\reiniciar_sistema.bat",
-
+	"SCRIPT_INICIAR_SITE": "scripts\\iniciar_sistema.bat",
     "PASTA_UPLOAD_PDDE": "uploads\\pdde",
     "PASTA_SAIDA_PDDE": "saida\\pdde",
-    "PLANO_CONTAS_PDDE": "modelos\\PLCONTAS.PDF",
+    "PLANO_CONTAS_PDDE": "modelos\\PLCONTAS.pdf",
     "MODELO_IMPORTACAO_CONTMATIC": "modelos\\Planilha Importação Contmatic.xlsx",
-
     "PASTA_UPLOAD_PDF": "uploads\\pdf",
     "PASTA_SAIDA_PDF": "saida\\pdf",
-	
-	"PASTA_ORGANIZADORA_ARQUIVOS": "exemplos\\pasta organizadora\\arquivos",
-	"PASTA_ORGANIZADORA_LOGS": "exemplos\\pasta organizadora\\logs"
+    "PASTA_ORGANIZADORA": "exemplos\\arquivos\\Pasta organizadora"
 }

@@ -2,48 +2,35 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>Entrar — {{ nome_escritorio or "Intranet" }}</title>
+    <link rel="icon" href="{{ url_for('static', filename=favicon_arquivo) }}?v={{ favicon_versao }}">
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="body-login">
+<body>
+<main class="content" style="max-width:400px; margin-top:100px;">
 
-<div class="login-container">
-
-    <div class="login-card">
-
-        <h1>Sistema Interno</h1>
-
-        <p class="subtitulo">
-            Intranet Contábil
-        </p>
-
-        <form method="POST">
-
-            <input
-                type="password"
-                name="senha"
-                placeholder="Digite a senha"
-                class="campo-login"
-                required
-            >
-
-            <button type="submit" class="btn-login">
-                Entrar
-            </button>
-
-        </form>
-
-        {% if erro %}
-        <div class="erro">
-            {{ erro }}
-        </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-container">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
         {% endif %}
+    {% endwith %}
 
+    <div class="panel">
+        <h2>{{ nome_escritorio or "Escritório" }} Intranet</h2>
+        <form class="vertical" action="/login" method="POST">
+            <input type="hidden" name="proxima" value="{{ proxima }}">
+            <div class="form-group">
+                <label>Senha de acesso</label>
+                <input type="password" name="senha" required autofocus>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
     </div>
 
-</div>
-
+</main>
 </body>
 </html>

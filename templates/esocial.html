@@ -1,39 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}
-Ajuda e-social
-{% endblock %}
+{% block title %}Esocial{% endblock %}
 
-{% block conteudo %}
+{% block content %}
 
-<body>
-<h1>Erros do e-social</h1>
+<h1 class="titulo-index">Erros do Esocial</h1>
 
 <hr>
 
-<h2>Cadastrar erro</h2>
+<h3>Cadastrar erro</h3>
 
-<form id="formEsocial" method="POST" action="/ajuda-esocial/cadastrar">
+<form class="vertical" id="formEsocial" method="POST" action="/rh/esocial/cadastrar">
 
-	<input class="input-form" type="text" name="codigo" placeholder="Código do erro" required>
-	<input class="input-form" type="text" name="descriminador" placeholder="Descriminação do erro" required>
-	<textarea class="input-form" name="solucao" rows="5" placeholder="Como resolver o erro" required></textarea>
-
-    <button class="btn-form" type="submit">
-        Cadastrar
-    </button>
+	<div class="form-group">
+		<input class="input-form" type="text" name="codigo" placeholder="Código do erro" required>
+	</div>
+	<div class="form-group">
+		<input class="input-form" type="text" name="descriminador" placeholder="Descriminação do erro" required>
+	</div>
+	<div class="form-group">
+		<textarea class="input-form" name="solucao" rows="5" placeholder="Como resolver o erro" required></textarea>
+	</div>
+	<div class="form-group">
+		<button class="btn-form" type="submit">Cadastrar</button>
+	</div>
 </form>
 
 <hr>
 
-<form method="get">
+<form class="horizontal" method="get">
     <input type="text" name="busca" placeholder="Pesquisar por código ou descriminador" value="{{ busca }}">
     <button type="submit">Buscar</button>
 </form>
 
-<br>
-
-<table border="1" cellpadding="8">
+<div class="tabela-wrapper"><table border="1" cellpadding="8">
 
     <tr>
         <th>Código</th>
@@ -50,7 +50,7 @@ Ajuda e-social
 		<td>
 			<form
 				method="POST"
-				action="/ajuda-esocial/excluir/{{ erro[0] }}"
+				action="/rh/esocial/excluir/{{ erro[0] }}"
 				onsubmit="return confirm('Deseja realmente excluir este erro?');"
 			>
 				<button
@@ -71,11 +71,10 @@ Ajuda e-social
 		
 	</tr>
     {% endfor %}
-</table>
+</table></div>
 
 {% if not erros %}
     <p>Nenhum erro cadastrado.</p>
 {% endif %}
 
-</body>
 {% endblock %}
