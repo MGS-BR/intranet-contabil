@@ -1,5 +1,6 @@
 # Intranet Contábil
 
+[![Python CI](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml/badge.svg)](https://github.com/MGS-BR/intranet-contabil/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.14-blue)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
