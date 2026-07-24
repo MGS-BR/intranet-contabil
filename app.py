@@ -1098,10 +1098,6 @@ def configuracoes_salvar_pastas():
 @app.route("/configuracoes/favicon", methods=["POST"])
 @requer_admin
 def configuracoes_favicon():
-    senha = request.form.get("senha", "")
-    if not senha_valida(senha):
-        flash("Senha incorreta.", "erro")
-        return redirect("/configuracoes")
 
     arquivo = request.files.get("favicon")
     extensoes_permitidas = {".ico", ".png"}
